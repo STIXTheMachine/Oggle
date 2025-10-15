@@ -12,6 +12,16 @@ enum {
     RV_GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
+template<typename ScalarType, unsigned int Dimension>
+using TVector = std::array<ScalarType, Dimension>;
+
+using Vec2 = TVector<GLfloat, 2>;
+using Vec3 = TVector<GLfloat, 3>;
+using Vec4 = TVector<GLfloat, 4>;
+
+template<typename AttribType, unsigned int N>
+using TAttribArray = std::array<AttribType, N>;
+
 int main() {
 
 
