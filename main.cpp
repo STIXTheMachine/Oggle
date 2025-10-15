@@ -6,46 +6,23 @@
 #include "glbinding/glbinding.h"
 using namespace gl;
 
-struct GLFWLib {
-    static void Init() {
-        static GLFWLib instance;
-    }
-
-    static bool isInitialized() {
-        return glfwInit() == GLFW_TRUE;
-    }
-
-    ~GLFWLib() {
-        glfwTerminate();
-    }
-
-private:
-    GLFWLib() {
-        glfwInit();
-    }
+enum {
+    RV_SUCCESS = 0,
+    RV_GLFW_INIT_FAILED,
+    RV_GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
-
-// Anonymous enum inside namespace to preserve scoping without having to static_cast<int>(ReturnValues::Foo) everywhere.
-namespace ReturnValues {
-    enum {
-        SUCCESS = 0,
-        GLFW_INIT_FAILED,
-        GLFW_MAIN_WINDOW_CREATION_FAILED,
-    };
-}
 
 int main() {
 
-    GLFWLib::Init();
 
-    if (!GLFWLib::isInitialized()) {
+    if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
-        return ReturnValues::GLFW_INIT_FAILED;
+        return RV_GLFW_INIT_FAILED;
     }
 
     auto MainWindow = glfwCreateWindow(640, 480, "Hello World", nullptr, nullptr);
     if (!MainWindow) {
-        return ReturnValues::GLFW_MAIN_WINDOW_CREATION_FAILED;
+        return RV_GLFW_MAIN_WINDOW_CREATION_FAILED;
     }
 
     glfwMakeContextCurrent(MainWindow);
@@ -60,5 +37,7 @@ int main() {
         glfwPollEvents();
     }
 
-    return ReturnValues::SUCCESS;
+    glfwTerminate();
+
+    return RV_SUCCESS;
 }
