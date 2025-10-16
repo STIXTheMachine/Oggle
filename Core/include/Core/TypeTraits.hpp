@@ -4,14 +4,14 @@
 // =====================================================================================================================
 // TypesAreUnique
 // =====================================================================================================================
-template<typename... Types>
+template<typename... Ts>
 struct TypesAreUnique;
 
 template<>
 struct TypesAreUnique<> : std::true_type {};
 
-template<typename Type>
-struct TypesAreUnique<Type> : std::true_type {};
+template<typename T>
+struct TypesAreUnique<T> : std::true_type {};
 
 /// Trait to determine if all types in a parameter pack are unique.
 /// NOTE: qualifiers and refs are removed during the check. Foo, const Foo, const Foo&, etc are all equivalent here
@@ -23,5 +23,21 @@ struct TypesAreUnique<First, Rest...> : std::bool_constant<
 
 /// Trait to determine if all types in a parameter pack are unique.
 /// NOTE: qualifiers and refs are removed during the check. Foo, const Foo, const Foo&, etc are all equivalent here
-template<typename... Types>
-constexpr bool TypesAreUnique_v = TypesAreUnique<Types...>::value;
+template<typename... Ts>
+constexpr bool TypesAreUnique_v = TypesAreUnique<Ts...>::value;
+
+// =====================================================================================================================
+// IsVertexAttribute
+// =====================================================================================================================
+struct VertexAttribute;
+
+template<typename T>
+struct IsVertexAttribute : std::is_base_of<VertexAttribute, T> {};
+
+template<typename... Ts>
+struct AllVertexAttributes : std::bool_constant<
+        (IsVertexAttribute<Ts>::value && ...)
+    > {};
+
+template<typename... Ts>
+constexpr bool AllVertexAttributes_v = AllVertexAttributes<Ts...>::value;
