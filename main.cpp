@@ -1,10 +1,6 @@
 #include <iostream>
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-#include <glbinding/gl/gl.h>
-
-#include "glbinding/glbinding.h"
-using namespace gl;
+#include <Renderer/GraphicsLibs.hpp>
+#include <Renderer/VertexTypes.hpp>
 
 enum {
     RV_SUCCESS = 0,
@@ -12,18 +8,13 @@ enum {
     RV_GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
-template<typename ScalarType, unsigned int Dimension>
-using TVector = std::array<ScalarType, Dimension>;
-
-using Vec2 = TVector<GLfloat, 2>;
-using Vec3 = TVector<GLfloat, 3>;
-using Vec4 = TVector<GLfloat, 4>;
-
-template<typename AttribType, unsigned int N>
-using TAttribArray = std::array<AttribType, N>;
-
 int main() {
-
+    Vertex_PN Test {
+        {
+            VertexPosition { 0.0f, 0.0f, 0.0f },
+            VertexNormal   { 1.0f, 0.0f, 0.0f }
+        }
+    };
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
