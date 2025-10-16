@@ -29,15 +29,11 @@ constexpr bool TypesAreUnique_v = TypesAreUnique<Ts...>::value;
 // =====================================================================================================================
 // IsVertexAttribute
 // =====================================================================================================================
+template<typename T>
 struct VertexAttribute;
 
 template<typename T>
-struct IsVertexAttribute : std::is_base_of<VertexAttribute, T> {};
+struct IsVertexAttribute : std::is_base_of<VertexAttribute<typename T::AttributeType>, T> {};
 
 template<typename... Ts>
-struct AllVertexAttributes : std::bool_constant<
-        (IsVertexAttribute<Ts>::value && ...)
-    > {};
-
-template<typename... Ts>
-constexpr bool AllVertexAttributes_v = AllVertexAttributes<Ts...>::value;
+constexpr bool IsVertexAttribute_v = IsVertexAttribute<Ts...>::value;

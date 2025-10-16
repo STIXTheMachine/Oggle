@@ -1,4 +1,6 @@
 #include <iostream>
+#include <print>
+#include <format>
 #include "Renderer/GraphicsLibs.hpp"
 #include "Renderer/VertexTypes.hpp"
 
@@ -9,10 +11,13 @@ enum {
 };
 
 int main() {
-    Vertex_P Vertices [] = {
-        Vertex_P {  0.0f,  0.5f, 0.0f }, // Top
-        Vertex_P {  0.5f, -0.5f, 0.0f }, // Right
-        Vertex_P { -0.5f, -0.5f, 0.0f }, // Left
+
+    Vertex_P Foo {{ 0.0f, 0.0f, 0.0f }};
+    Vertex_P Vertices []
+    {
+        {{  0.0f,  0.0f, 0.0f }},
+        {{  0.5f, -0.5f, 0.0f }},
+        {{ -0.5f, -0.5f, 0.0f }}
     };
 
     if (!glfwInit()) {
