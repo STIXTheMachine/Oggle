@@ -9,12 +9,8 @@ enum {
 };
 
 int main() {
-    Vertex_PN Test {
-        {
-            VertexPosition { 0.0f, 0.0f, 0.0f },
-            VertexNormal   { 1.0f, 0.0f, 0.0f }
-        }
-    };
+    Vertex_P TestP { { 0.0f, 0.0f, 0.0f } };
+    Vertex_PN TestPN {  { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }  };
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;

@@ -1,5 +1,6 @@
 #pragma once
 #include <array>
+#include <vector>
 #include <memory>
 
 template<typename T, std::size_t N>

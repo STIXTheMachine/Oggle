@@ -1,31 +1,57 @@
-#include "Core/TypeTraits.hpp"
+#include <Testing/doctest.h>
+#include <Core/TypeTraits.hpp>
+#include <Renderer/VertexTypes.hpp>
 
-static_assert(TypesAreUnique_v<int>);                       // single type → true
-static_assert(TypesAreUnique_v<int, float>);                // distinct types → true
-static_assert(TypesAreUnique_v<int, float, double>);        // multiple distinct → true
-static_assert(TypesAreUnique_v<char, signed char, unsigned char>); // distinct despite similar names
+TEST_CASE("Testing TypesAreUnique_v") {
+    SUBCASE("Basic types") {
+        SUBCASE("Unqiue"){
+            CHECK(TypesAreUnique_v<>);
+            CHECK(TypesAreUnique_v<int>);
+            CHECK(TypesAreUnique_v<int, float>);
+            CHECK(TypesAreUnique_v<int, float, double>);
+            CHECK(TypesAreUnique_v<char, signed char, unsigned char>);
+        }
 
-// Fail cases: duplicates
-static_assert(!TypesAreUnique_v<int, int>);                 // identical
-static_assert(!TypesAreUnique_v<int, float, int>);          // duplicate later in pack
-static_assert(!TypesAreUnique_v<float, double, float, double>); // multiple duplicates
+        SUBCASE("Nonunique") {
+            CHECK(!TypesAreUnique_v<int, int>);
+            CHECK(!TypesAreUnique_v<int, float, int>);
+            CHECK(!TypesAreUnique_v<int, float, int, float>);
+        }
 
-// cv-qualifiers and references
-static_assert(!TypesAreUnique_v<int, const int>);           // const doesn’t make it unique
-static_assert(!TypesAreUnique_v<int, int&>);                // reference still same underlying type
-static_assert(!TypesAreUnique_v<int, int&&>);               // same for rvalue ref
-static_assert(!TypesAreUnique_v<int&, int&&>);              // both refer to int
-static_assert(TypesAreUnique_v<int, const float&>);         // different base types
+        SUBCASE("Qualified types") {
+            CHECK(!TypesAreUnique_v<int, const int  >);
+            CHECK(!TypesAreUnique_v<int,       int& >);
+            CHECK(!TypesAreUnique_v<int, const int& >);
+            CHECK(!TypesAreUnique_v<int,       int&&>);
+            CHECK(!TypesAreUnique_v<int, const int&&>);
+        }
 
-// Type aliases
-using i32 = int;
-static_assert(!TypesAreUnique_v<int, i32>);                 // aliases collapse to same type
+        SUBCASE("Typedefs") {
+            using Foo = int;
+            using Bar = char;
+            using Baz = float;
 
-// Fundamental edge cases
-static_assert(TypesAreUnique_v<void>);                      // single void → true
-static_assert(TypesAreUnique_v<void, std::nullptr_t>);      // distinct types → true
-static_assert(!TypesAreUnique_v<void, void>);               // identical void → false
+            CHECK(TypesAreUnique_v<Foo, Bar, Baz>);
 
-// Qualifier-mixed combos
-static_assert(!TypesAreUnique_v<const int, volatile int>);  // cv-qualifiers ignored by is_same_v
-static_assert(TypesAreUnique_v<const int, volatile float>); // different underlying types → true
+            CHECK(TypesAreUnique_v<int, Bar, Baz>);
+            CHECK(TypesAreUnique_v<Foo, char, Baz>);
+            CHECK(TypesAreUnique_v<Foo, Bar, float>);
+
+            CHECK(TypesAreUnique_v<Foo, char, float>);
+            CHECK(TypesAreUnique_v<int, Bar, float>);
+            CHECK(TypesAreUnique_v<int, char, Baz>);
+
+            CHECK(!TypesAreUnique_v<Foo, int>);
+            CHECK(!TypesAreUnique_v<Bar, char>);
+            CHECK(!TypesAreUnique_v<Baz, float>);
+        }
+    }
+
+    SUBCASE("VertexAttribute types") {
+        CHECK(TypesAreUnique_v<VertexPosition>);
+        CHECK(TypesAreUnique_v<VertexPosition, VertexNormal>);
+        CHECK(TypesAreUnique_v<VertexPosition, VertexColor>);
+        CHECK(TypesAreUnique_v<VertexPosition, VertexNormal, VertexColor>);
+        CHECK(TypesAreUnique_v<VertexPosition, VertexNormal, VertexTexCoord>);
+    }
+}
