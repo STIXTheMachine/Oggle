@@ -12,12 +12,29 @@ enum {
 
 int main() {
 
-    Vertex_P Foo {{ 0.0f, 0.0f, 0.0f }};
-    Vertex_P Vertices []
+    Vertex_P P { 0.0f, 0.0f, 0.0f };
+
+    Vertex_P Ps []
     {
-        {{  0.0f,  0.0f, 0.0f }},
-        {{  0.5f, -0.5f, 0.0f }},
-        {{ -0.5f, -0.5f, 0.0f }}
+        {  0.0f,  0.0f, 0.0f },
+        {  0.5f, -0.5f, 0.0f },
+        { -0.5f, -0.5f, 0.0f }
+    };
+
+    Vertex_PN PN {
+            { 0.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f }
+    };
+
+    Vertex_PN PNs [] {
+        {
+            { 0.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f }
+        },
+        {
+            { 0.0f, 0.0f, 0.0f },
+            { 1.0f, 0.0f, 0.0f }
+        }
     };
 
     if (!glfwInit()) {
