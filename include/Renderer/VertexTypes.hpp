@@ -1,6 +1,6 @@
 #pragma once
-#include <Core/TypeTraits.hpp>
-#include <Core/MathTypes.hpp>
+#include "Core/TypeTraits.hpp"
+#include "Core/MathTypes.hpp"
 
 // These cannot be type aliases because it breaks the constraint on TVertex requiring the attribute types to be unique
 struct VertexPosition : Vec3 {};

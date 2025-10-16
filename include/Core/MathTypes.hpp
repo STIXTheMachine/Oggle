@@ -1,5 +1,5 @@
 #pragma once
-#include <Core/Array.hpp>
+#include "Array.hpp"
 
 template<typename ScalarType, std::size_t Dimension>
 requires std::is_arithmetic_v<ScalarType>

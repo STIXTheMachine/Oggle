@@ -3,7 +3,7 @@ project(Oggle)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(${PROJECT_NAME} main.cpp
+add_executable(${PROJECT_NAME} src/main.cpp
         #core/tests/TypeTraitTests.cpp
 )
 
@@ -21,9 +21,7 @@ add_subdirectory(${GLBINDING_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE "ThirdParty/glbinding-3.5.0/source/glbinding/include")
 target_include_directories(${PROJECT_NAME} PRIVATE "ThirdParty/glbinding-3.5.0/source/glbinding-aux/include")
 
-
-target_include_directories(${PROJECT_NAME} PRIVATE "Core/include")
-target_include_directories(${PROJECT_NAME} PRIVATE "Renderer/include")
+target_include_directories(${PROJECT_NAME} PRIVATE "include")
 target_link_libraries(${PROJECT_NAME} PRIVATE
         glfw
         OpenGL::GL
