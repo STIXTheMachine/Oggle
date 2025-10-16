@@ -1,8 +1,6 @@
 #include <iostream>
-#include <print>
-#include <format>
 #include "Renderer/GraphicsLibs.hpp"
-#include "Renderer/VertexTypes.hpp"
+#include "Renderer/Vertex.hpp"
 
 enum {
     RV_SUCCESS = 0,

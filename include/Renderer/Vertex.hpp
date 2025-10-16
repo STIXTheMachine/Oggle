@@ -1,30 +1,13 @@
 #pragma once
 #include "Core/TypeTraits.hpp"
 #include "Core/Tuple.hpp"
-#include "Core/MathTypes.hpp"
-
-#define USE_TUPLE_SHENANIGANS false
-
-#define DECLARE_VERTEX_ATTRIBUTE(Name, BaseType)            \
-    struct Vertex##Name : VertexAttribute<BaseType> {};     \
-    static_assert(sizeof(Vertex##Name) == sizeof(BaseType));
-
-// Empty base class that basically serves as a type tag
-template<typename Type>
-struct VertexAttribute
-{
-    using AttributeType = Type;
-    Type Value;
-};
-
-DECLARE_VERTEX_ATTRIBUTE(Position, Vec3);
-DECLARE_VERTEX_ATTRIBUTE(Normal,   Vec3);
-DECLARE_VERTEX_ATTRIBUTE(Color,    Vec3);
-DECLARE_VERTEX_ATTRIBUTE(TexCoord, Vec3);
+#include "Renderer/VertexAttributes.hpp"
 
 template<typename... AttributeTypes>
 struct TVertex;
 
+// This looks much scarier than it is. A TVertex is just a fancified TTuple made from its composite attributes
+// The exception is when there is a single attribute; see the specialization below for that.
 template<typename... AttributeTypes>
 requires
     (sizeof...(AttributeTypes) > 1) &&
@@ -52,9 +35,8 @@ struct TVertex<AttributeTypes...> : TTuple<AttributeTypes...>
     TVertex(AttributeTypes&&... args) : Base(std::forward<AttributeTypes>(args)...) {}
 };
 
-template<typename T, typename... Args>
-concept AggregateConstructibleFrom = requires { T { std::declval<Args>()... }; };
-
+// In the case of a single attribute, a TVertex IS the attribute, just with the API above tacked on for consistency
+// Can be constructed exactly like its attribute can - i.e. TVertex<VertexPosition> Foo { 0.f, 0.f 0.f }; is valid.
 template<typename SingleAttribute>
 requires
     IsVertexAttribute_v<SingleAttribute>
