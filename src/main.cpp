@@ -9,8 +9,11 @@ enum {
 };
 
 int main() {
-    Vertex_P TestP { { 0.0f, 0.0f, 0.0f } };
-    Vertex_PN TestPN {  { 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }  };
+    Vertex_P Vertices [] = {
+        Vertex_P {  0.0f,  0.5f, 0.0f }, // Top
+        Vertex_P {  0.5f, -0.5f, 0.0f }, // Right
+        Vertex_P { -0.5f, -0.5f, 0.0f }, // Left
+    };
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
