@@ -1,5 +1,6 @@
 #pragma once
 #include <Core/MathTypes.hpp>
+#include <Core/Color.hpp>
 
 #define DECLARE_VERTEX_ATTRIBUTE(Name, BaseType)            \
 struct Vertex##Name : VertexAttribute<BaseType> {};     \
@@ -17,7 +18,7 @@ DECLARE_VERTEX_ATTRIBUTE(Position, Vec3);
 DECLARE_VERTEX_ATTRIBUTE(Tangent,  Vec3);
 DECLARE_VERTEX_ATTRIBUTE(Normal,   Vec3);
 DECLARE_VERTEX_ATTRIBUTE(Binormal, Vec4);
-DECLARE_VERTEX_ATTRIBUTE(Color,    Vec3);
+DECLARE_VERTEX_ATTRIBUTE(Color,    ByteColor);
 DECLARE_VERTEX_ATTRIBUTE(TexCoord, Vec3);
 DECLARE_VERTEX_ATTRIBUTE(Weight,   float);
 DECLARE_VERTEX_ATTRIBUTE(Index,    unsigned int);
