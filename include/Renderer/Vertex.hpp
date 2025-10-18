@@ -3,6 +3,8 @@
 #include "Core/Tuple.hpp"
 #include "Renderer/VertexAttributes.hpp"
 
+// Is anything in this file remotely necessary? Nope! Was it a fun learning experience to make? Yep!
+
 template<typename... AttributeTypes>
 struct TVertex;
 
@@ -17,6 +19,9 @@ struct TVertex<AttributeTypes...> : TTuple<AttributeTypes...>
 {
     using Base = TTuple<AttributeTypes...>;
     using Base::Base;
+
+    static constexpr std::size_t AttributeCount = sizeof...(AttributeTypes);
+    static constexpr std::size_t Stride = sizeof(TTuple<AttributeTypes...>);
 
     template<typename AttributeType>
     AttributeType& GetAttribute() { return std::get<AttributeType>(*this); }
@@ -45,6 +50,9 @@ struct TVertex<SingleAttribute> : SingleAttribute
     using Base = SingleAttribute;
     using Base::Base;
 
+    static constexpr std::size_t AttributeCount = 1;
+    static constexpr std::size_t Stride = sizeof(SingleAttribute);
+
     template<typename AttributeType>
     AttributeType& GetAttribute() { return *this; }
 
@@ -56,8 +64,9 @@ struct TVertex<SingleAttribute> : SingleAttribute
 
     template<typename AttributeType>
     const decltype(AttributeType::Value)& Get() const { return this->Value; };
+
     template<typename... Args>
-    TVertex(Args&&... args) : Base{ AttributeType { std::forward<Args>(args)... } } {};
+    TVertex(Args&&... args) : Base {AttributeType { std::forward<Args>(args)... } } {};
 
 private:
     using AttributeType = Base::AttributeType;

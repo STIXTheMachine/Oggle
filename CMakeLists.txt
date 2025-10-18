@@ -4,7 +4,20 @@ project(Oggle)
 set(CMAKE_CXX_STANDARD 23)
 set(TARGET ${PROJECT_NAME})
 
-add_executable(${TARGET} src/main.cpp)
+
+file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+add_executable(
+    ${TARGET}
+    src/main.cpp
+    ${SOURCES}
+)
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebugInfo")
+    target_compile_definitions(${TARGET} PRIVATE BUILD_DEBUG=1)
+else()
+    target_compile_definitions(${TARGET} PRIVATE BUILD_DEBUG=0)
+endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
