@@ -51,7 +51,7 @@ struct FloatColor
 constexpr ByteColor::ByteColor(ComponentType R, ComponentType G, ComponentType B, ComponentType A)
     : R(R), G(G), B(B), A(A) {};
 constexpr ByteColor::ByteColor(ComponentType R, ComponentType G, ComponentType B)
-    : R(R), G(G), B(B), A(255) {};
+    : R(R), G(G), B(B), A(std::numeric_limits<ComponentType>::max()) {};
 
 constexpr ByteColor::operator FloatColor() const
 {
