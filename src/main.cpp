@@ -34,17 +34,71 @@ void main()
 }
 )";
 
+const char* ComputeShaderSource =
+R"(
+#version 430
+layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
+void main()
+{
+asdf
+    // do absolutely nothing
+}
+)";
+
 enum {
     SUCCESS = 0,
     GLFW_INIT_FAILED,
     GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
+
+/// Adapted from https://learnopengl.com/In-Practice/Debugging
+void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLenum Severity, GLsizei Length, const char* Message, const void* UserParam)
+{
+    if (Id == 131169 || Id == 131185 || Id == 131218 || Id == 131204) return;
+
+    std::println("================ [OpenGL Debug Message] ================");
+    std::println("ID: {}", Id);
+
+    switch (Source)
+    {
+        case GL_DEBUG_SOURCE_API:             std::println("Source: API"); break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::println("Source: Window System"); break;
+        case GL_DEBUG_SOURCE_SHADER_COMPILER: std::println("Source: Shader Compiler"); break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::println("Source: Third Party"); break;
+        case GL_DEBUG_SOURCE_APPLICATION:     std::println("Source: Application"); break;
+        case GL_DEBUG_SOURCE_OTHER:           std::println("Source: Other"); break;
+        default:                              std::println("Source: INVALID SOURCE"); break;
+    }
+
+    switch (Type)
+    {
+        case GL_DEBUG_TYPE_ERROR:               std::println("Type: Error"); break;
+        case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::println("Type: Deprecated Behavior"); break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::println("Type: Undefined Behavior"); break;
+        case GL_DEBUG_TYPE_PORTABILITY:         std::println("Type: Portability"); break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         std::println("Type: Performance"); break;
+        case GL_DEBUG_TYPE_MARKER:              std::println("Type: Marker"); break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          std::println("Type: Push Group"); break;
+        case GL_DEBUG_TYPE_POP_GROUP:           std::println("Type: Pop Grou"); break;
+        case GL_DEBUG_TYPE_OTHER:               std::println("Type: Other"); break;
+        default:                                std::println("Type: INVALID TYPE"); break;
+    }
+
+    switch (Severity)
+    {
+        case GL_DEBUG_SEVERITY_HIGH:         std::println("Severity: High"); break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       std::println("Severity: Medium"); break;
+        case GL_DEBUG_SEVERITY_LOW:          std::println("Severity: Low"); break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: std::println("Severity: Notification"); break;
+        default:                             std::println("Severity: INVALID SEVERITY"); break;
+    }
+
+    std::println("{}", Message);
+    std::println("========================================================");
+}
+
 int main() {
-
-    GraphicsShaderProgramBuilder Foo;
-
-    Foo.Build();
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -67,6 +121,10 @@ int main() {
 
     glbinding::initialize(glfwGetProcAddress);
 
+    glEnable(GL_DEBUG_OUTPUT);
+    glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+    glDebugMessageCallback(LogOpenGLError, nullptr);
+
     const Vertex_P Triangle[]
     {
         {  0.0f,  0.5f, 0.0f }, // Top
@@ -85,6 +143,17 @@ int main() {
         { -0.5f, -0.5f,  0.5f }, // Left bottom front
         { -0.5f, -0.5f, -0.5f }, // Left bottom back
     };
+
+    ComputeShaderProgramBuilder Compute;
+    Compute.SetSource(ComputeShaderSource);
+    GLuint ComputeProgram = Compute.Build();
+    glUseProgram(ComputeProgram);
+    glDispatchCompute(1, 1, 1);
+    // if (GLenum E = glGetError(); E != GL_NO_ERROR)
+    // {
+    //     auto Eint = static_cast<unsigned int>(E);
+    //     std::println("Error: {}", Eint);
+    // }
 
     GLuint VAO, VBO, EBO;
     glCreateBuffers(1, &VBO);

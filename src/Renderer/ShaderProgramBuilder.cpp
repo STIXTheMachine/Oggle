@@ -20,11 +20,14 @@ GLuint CompileShader(const ShaderSource& Source, GLenum Type)
             char InfoLog[1024];
             glGetShaderInfoLog(Shader, 1024, nullptr, InfoLog);
 
-            // TODO: Check ShaderSource filepath and print it if present.
-            std::println(
-                "ERROR: failed to compile compute shader! Info log:\n{}",
-                InfoLog
-            );
+        std::println(
+            "=========================================================\n"
+            "ERROR: failed to compile shader!\n"
+            "================ [OpenGL Shader InfoLog] ================\n"
+            "{}"
+            "=========================================================\n",
+            InfoLog
+        );
 
             if (Source.GetSourceFilePath().has_value())
             {
@@ -162,6 +165,29 @@ GLuint ComputeShaderProgramBuilder::Build()
 
     glAttachShader(Program, Shader);
 
+    glLinkProgram(Program);
+
+    GLint Success {};
+    glGetProgramiv(Program, GL_LINK_STATUS, &Success);
+
+    if (!Success)
+    {
+        char InfoLog[1024] { "Empty Message Log" };
+        glGetProgramInfoLog(Program, 1024, nullptr, InfoLog);
+
+        std::println(
+            "================================t ==========================\n"
+            "ERROR: failed to link program!\n"
+            "================ [OpenGL Program InfoLog] ================\n"
+            "{}"
+            "==========================================================\n",
+            InfoLog
+        );
+        glDeleteShader(Shader);
+        glDeleteProgram(Program);
+        return 0;
+    }
+
     glDeleteShader(Shader);
     return Program;
 }
@@ -181,4 +207,9 @@ ComputeShaderProgramBuilder& ComputeShaderProgramBuilder::SetSource(std::string_
 {
     Source.SetFromString(InString);
     return *this;
+}
+
+ComputeShaderProgramBuilder& ComputeShaderProgramBuilder::SetSource(const char* InString)
+{
+    return SetSource(std::string_view { InString });
 }

@@ -5,7 +5,7 @@
 #include <optional>
 
 // Struct representing a shader's source code. Holds a copy of the source code in memory as well as the path of the file
-// the source code was loaded from, it if was loaded from a file.
+// the source code was loaded from, if it was loaded from a file.
 struct ShaderSource
 {
     using NullablePath = std::optional<std::filesystem::path>;
@@ -34,7 +34,6 @@ private:
     bool         bHasSource = false;
 };
 
-
 struct ShaderProgramBuilder : NonCopyable, NonMovable, VirtualDestructor
 {
     // Returns true if a valid GLSL shader program could be compiled with the set of sources attached.
@@ -55,7 +54,7 @@ struct GraphicsShaderProgramBuilder final : ShaderProgramBuilder
     // Does not validate that any of the attached sources actually compile or link to form a working program.
     bool IsValidConfiguration() override;
 
-    GLuint Build() override;
+    //GLuint Build() override;
 
     GraphicsShaderProgramBuilder& SetVertexSource(const Path&);
     GraphicsShaderProgramBuilder& SetVertexSource(std::string_view);
@@ -91,6 +90,7 @@ struct ComputeShaderProgramBuilder final : ShaderProgramBuilder
 
     ComputeShaderProgramBuilder& SetSource(const Path&);
     ComputeShaderProgramBuilder& SetSource(std::string_view);
+    ComputeShaderProgramBuilder& SetSource(const char*);
 
 private:
     ShaderSource Source;
