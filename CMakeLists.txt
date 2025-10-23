@@ -8,7 +8,6 @@ set(TARGET ${PROJECT_NAME})
 file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(
     ${TARGET}
-    src/main.cpp
     ${SOURCES}
 )
 
@@ -33,6 +32,17 @@ add_subdirectory(${GLBINDING_DIR})
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Vendor/glbinding-3.5.0/source/glbinding/include")
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Vendor/glbinding-3.5.0/source/glbinding-aux/include")
 
+include(FetchContent)
+
+# GLM
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY	https://github.com/g-truc/glm.git
+        GIT_TAG 	0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
 target_include_directories(${TARGET} PRIVATE "include")
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Headers")
 target_link_libraries(${TARGET} PRIVATE
@@ -40,8 +50,13 @@ target_link_libraries(${TARGET} PRIVATE
         OpenGL::GL
         glbinding::glbinding
         glbinding::glbinding-aux
+        glm::glm
 )
 
+
+# ===========================================================================================
+# ========================================== Tests ==========================================
+# ===========================================================================================
 set(TARGET Tests)
 
 add_executable(${TARGET}

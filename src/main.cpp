@@ -1,8 +1,11 @@
 #include <iostream>
 #include <print>
-#include "Renderer/GraphicsLibs.hpp"
-#include "Renderer/Vertex.hpp"
-#include "Core/ColorPalettes.hpp"
+#include <Renderer/GraphicsLibs.hpp>
+#include <Renderer/Vertex.hpp>
+#include <Core/ColorPalettes.hpp>
+#include <Renderer/ShaderProgramBuilder.hpp>
+#include <glm/common.hpp>
+#include <Core/TypeBases.hpp>
 
 #define BUFFER_OFFSET(Offset) ((void*)(Offset))
 
@@ -39,6 +42,10 @@ enum {
 
 int main() {
 
+    GraphicsShaderProgramBuilder Foo;
+
+    Foo.Build();
+
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return GLFW_INIT_FAILED;
@@ -60,11 +67,23 @@ int main() {
 
     glbinding::initialize(glfwGetProcAddress);
 
-    const Vertex_P Triangle []
+    const Vertex_P Triangle[]
     {
         {  0.0f,  0.5f, 0.0f }, // Top
         {  0.5f, -0.5f, 0.0f }, // Right
         { -0.5f, -0.5f, 0.0f }, // Left
+    };
+
+    const Vertex_P Cube[]
+    {
+        {  0.5f,  0.5f,  0.5f }, // Right top front
+        {  0.5f,  0.5f, -0.5f }, // Right top back
+        {  0.5f, -0.5f,  0.5f }, // Right bottom front
+        {  0.5f, -0.5f, -0.5f }, // Right bottom back
+        { -0.5f,  0.5f,  0.5f }, // Left top front
+        { -0.5f,  0.5f, -0.5f }, // Left top back
+        { -0.5f, -0.5f,  0.5f }, // Left bottom front
+        { -0.5f, -0.5f, -0.5f }, // Left bottom back
     };
 
     GLuint VAO, VBO, EBO;
@@ -109,7 +128,7 @@ int main() {
     while (!glfwWindowShouldClose(MainWindow)) {
         glClear(GL_COLOR_BUFFER_BIT);
 
-        if (glfwGetTime() > SwapTime)
+        if (false && glfwGetTime() > SwapTime)
         {
             SwapTime += SwapInterval;
 
@@ -119,7 +138,7 @@ int main() {
             glBindVertexArray(BoundVAO == 0 ? VAO : 0);
         }
 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glDrawArrays(GL_LINE_LOOP, 0, 3);
         
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();

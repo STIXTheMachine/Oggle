@@ -5,13 +5,13 @@
 struct ByteColor;
 struct FloatColor;
 
-/// Stores color information in 4 bytes for R, G, B, A.
+/// Stores color information in 4 bytes for R, G, B, A. Byte order is 0xRRGGBBAA.
 struct ByteColor
 {
     using ComponentType = GLubyte;
     ComponentType R, G, B, A;
 
-    constexpr ByteColor() = default;
+    constexpr ByteColor();
     constexpr ByteColor(ComponentType R, ComponentType G, ComponentType B, ComponentType A);
     constexpr ByteColor(ComponentType R, ComponentType G, ComponentType B);
 
@@ -19,6 +19,28 @@ struct ByteColor
 
     static constexpr ByteColor FromHexRGB(unsigned int HexRGB);
     static constexpr ByteColor FromHexRGBA(unsigned int HexRGBA);
+
+    static const ByteColor White;
+    static const ByteColor LightGray;
+    static const ByteColor Gray;
+    static const ByteColor DarkGray;
+    static const ByteColor Black;
+
+    static const ByteColor Red;
+    static const ByteColor Green;
+    static const ByteColor Blue;
+
+    static const ByteColor Yellow;
+    static const ByteColor Magenta;
+    static const ByteColor Cyan;
+
+    static const ByteColor Emerald;
+    static const ByteColor Orange;
+    static const ByteColor Purple;
+    static const ByteColor Silver;
+    static const ByteColor Turquoise;
+
+    static const ByteColor Transparent;
 
     static_assert(std::is_arithmetic_v<ComponentType>, "ColorComponent must be an arithmetic type.");
 };
@@ -38,6 +60,28 @@ struct FloatColor
 
     explicit constexpr operator ByteColor() const;
 
+    static const FloatColor White;
+    static const FloatColor LightGray;
+    static const FloatColor Gray;
+    static const FloatColor DarkGray;
+    static const FloatColor Black;
+
+    static const FloatColor Red;
+    static const FloatColor Green;
+    static const FloatColor Blue;
+
+    static const FloatColor Yellow;
+    static const FloatColor Magenta;
+    static const FloatColor Cyan;
+
+    static const FloatColor Emerald;
+    static const FloatColor Orange;
+    static const FloatColor Purple;
+    static const FloatColor Silver;
+    static const FloatColor Turquoise;
+
+    static const FloatColor Transparent;
+
     static_assert(std::is_arithmetic_v<ComponentType>, "ColorComponent must be an arithmetic type.");
 };
 
@@ -48,6 +92,7 @@ struct FloatColor
 // =====================================================================================================================
 // ===================================================== ByteColor =====================================================
 // =====================================================================================================================
+constexpr ByteColor::ByteColor() : R(0), G(0), B(0), A(0) {};
 constexpr ByteColor::ByteColor(ComponentType R, ComponentType G, ComponentType B, ComponentType A)
     : R(R), G(G), B(B), A(A) {};
 constexpr ByteColor::ByteColor(ComponentType R, ComponentType G, ComponentType B)
@@ -67,7 +112,7 @@ constexpr ByteColor::operator FloatColor() const
 
 constexpr ByteColor ByteColor::FromHexRGB(unsigned int HexRGB)
 {
-    return FromHexRGBA(HexRGB << 8 | 0xFF);
+    return FromHexRGBA((HexRGB << 8) | 0xFF);
 }
 
 constexpr ByteColor ByteColor::FromHexRGBA(unsigned int HexRGBA)
@@ -90,7 +135,7 @@ constexpr FloatColor::FloatColor(ComponentType R, ComponentType G, ComponentType
 
 constexpr FloatColor FloatColor::FromHexRGB(unsigned int HexRGB)
 {
-    return FromHexRGBA(HexRGB << 8 | 0xFF);
+    return FromHexRGBA((HexRGB << 8) | 0xFF);
 }
 constexpr FloatColor FloatColor::FromHexRGBA(unsigned int HexRGBA)
 {
@@ -99,7 +144,7 @@ constexpr FloatColor FloatColor::FromHexRGBA(unsigned int HexRGBA)
 
 constexpr FloatColor::operator ByteColor() const
 {
-    static constexpr float ConversionFactor = 255.f;
+    constexpr auto ConversionFactor = std::numeric_limits<ByteColor::ComponentType>::max();
     return ByteColor {
         static_cast<ByteColor::ComponentType>(R * ConversionFactor),
         static_cast<ByteColor::ComponentType>(G * ConversionFactor),
