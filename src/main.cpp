@@ -62,35 +62,35 @@ void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLenum Sev
 
     switch (Source)
     {
-        case GL_DEBUG_SOURCE_API:             std::println("Source: API"); break;
-        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::println("Source: Window System"); break;
+        case GL_DEBUG_SOURCE_API:             std::println("Source: API");             break;
+        case GL_DEBUG_SOURCE_WINDOW_SYSTEM:   std::println("Source: Window System");   break;
         case GL_DEBUG_SOURCE_SHADER_COMPILER: std::println("Source: Shader Compiler"); break;
-        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::println("Source: Third Party"); break;
-        case GL_DEBUG_SOURCE_APPLICATION:     std::println("Source: Application"); break;
-        case GL_DEBUG_SOURCE_OTHER:           std::println("Source: Other"); break;
-        default:                              std::println("Source: INVALID SOURCE"); break;
+        case GL_DEBUG_SOURCE_THIRD_PARTY:     std::println("Source: Third Party");     break;
+        case GL_DEBUG_SOURCE_APPLICATION:     std::println("Source: Application");     break;
+        case GL_DEBUG_SOURCE_OTHER:           std::println("Source: Other");           break;
+        default:                              std::println("Source: INVALID SOURCE");  break;
     }
 
     switch (Type)
     {
-        case GL_DEBUG_TYPE_ERROR:               std::println("Type: Error"); break;
+        case GL_DEBUG_TYPE_ERROR:               std::println("Type: Error");               break;
         case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR: std::println("Type: Deprecated Behavior"); break;
-        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::println("Type: Undefined Behavior"); break;
-        case GL_DEBUG_TYPE_PORTABILITY:         std::println("Type: Portability"); break;
-        case GL_DEBUG_TYPE_PERFORMANCE:         std::println("Type: Performance"); break;
-        case GL_DEBUG_TYPE_MARKER:              std::println("Type: Marker"); break;
-        case GL_DEBUG_TYPE_PUSH_GROUP:          std::println("Type: Push Group"); break;
-        case GL_DEBUG_TYPE_POP_GROUP:           std::println("Type: Pop Grou"); break;
-        case GL_DEBUG_TYPE_OTHER:               std::println("Type: Other"); break;
-        default:                                std::println("Type: INVALID TYPE"); break;
+        case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:  std::println("Type: Undefined Behavior");  break;
+        case GL_DEBUG_TYPE_PORTABILITY:         std::println("Type: Portability");         break;
+        case GL_DEBUG_TYPE_PERFORMANCE:         std::println("Type: Performance");         break;
+        case GL_DEBUG_TYPE_MARKER:              std::println("Type: Marker");              break;
+        case GL_DEBUG_TYPE_PUSH_GROUP:          std::println("Type: Push Group");          break;
+        case GL_DEBUG_TYPE_POP_GROUP:           std::println("Type: Pop Grou");            break;
+        case GL_DEBUG_TYPE_OTHER:               std::println("Type: Other");               break;
+        default:                                std::println("Type: INVALID TYPE");        break;
     }
 
     switch (Severity)
     {
-        case GL_DEBUG_SEVERITY_HIGH:         std::println("Severity: High"); break;
-        case GL_DEBUG_SEVERITY_MEDIUM:       std::println("Severity: Medium"); break;
-        case GL_DEBUG_SEVERITY_LOW:          std::println("Severity: Low"); break;
-        case GL_DEBUG_SEVERITY_NOTIFICATION: std::println("Severity: Notification"); break;
+        case GL_DEBUG_SEVERITY_HIGH:         std::println("Severity: High");             break;
+        case GL_DEBUG_SEVERITY_MEDIUM:       std::println("Severity: Medium");           break;
+        case GL_DEBUG_SEVERITY_LOW:          std::println("Severity: Low");              break;
+        case GL_DEBUG_SEVERITY_NOTIFICATION: std::println("Severity: Notification");     break;
         default:                             std::println("Severity: INVALID SEVERITY"); break;
     }
 
@@ -144,8 +144,8 @@ int main() {
         { -0.5f, -0.5f, -0.5f }, // Left bottom back
     };
 
-    ComputeShaderProgramBuilder Compute;
-    Compute.SetSource(ComputeShaderSource);
+    ShaderProgramBuilder Compute;
+    Compute.SetComputeShaderSource(ComputeShaderSource);
     GLuint ComputeProgram = Compute.Build();
     glUseProgram(ComputeProgram);
     glDispatchCompute(1, 1, 1);

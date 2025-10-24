@@ -34,39 +34,39 @@ private:
     bool         bHasSource = false;
 };
 
-struct ShaderProgramBuilder : NonCopyable, NonMovable, VirtualDestructor
-{
-    // Returns true if a valid GLSL shader program could be compiled with the set of sources attached.
-    virtual bool   IsValidConfiguration() = 0;
-
-    // Compiles and links the attached sources into an OpenGL shader program.
-    // Returns the name of the program if compiling and linking was successful, 0 otherwise.
-    virtual GLuint Build() = 0;
-};
-
-struct GraphicsShaderProgramBuilder final : ShaderProgramBuilder
+struct ShaderProgramBuilder final : NonCopyable, NonMovable
 {
     using Path = std::filesystem::path;
 
     // Returns true if a valid GLSL shader program could be compiled with the set of sources attached.
-    // E.g. checks that at least a vertex shader and fragment shader are attached, AND that if one type of tesselation
-    // shader is attached, so is the other.
     // Does not validate that any of the attached sources actually compile or link to form a working program.
-    bool IsValidConfiguration() override;
+    bool IsValidConfiguration() const;
 
-    //GLuint Build() override;
+    GLuint Build();
 
-    GraphicsShaderProgramBuilder& SetVertexSource(const Path&);
-    GraphicsShaderProgramBuilder& SetVertexSource(std::string_view);
-    GraphicsShaderProgramBuilder& SetTessControlSource(const Path&);
-    GraphicsShaderProgramBuilder& SetTessControlSource(std::string_view);
-    GraphicsShaderProgramBuilder& SetTessEvalSource(const Path&);
-    GraphicsShaderProgramBuilder& SetTessEvalSource(std::string_view);
-    GraphicsShaderProgramBuilder& SetGeometrySource(const Path&);
-    GraphicsShaderProgramBuilder& SetGeometrySource(std::string_view);
-    GraphicsShaderProgramBuilder& SetFragmentSource(const Path&);
-    GraphicsShaderProgramBuilder& SetFragmentSource(std::string_view);
+    ShaderProgramBuilder& SetVertexSource(const Path&);
+    ShaderProgramBuilder& SetVertexSource(std::string_view);
+    ShaderProgramBuilder& SetVertexSource(const char*);
 
+    ShaderProgramBuilder& SetTessControlSource(const Path&);
+    ShaderProgramBuilder& SetTessControlSource(std::string_view);
+    ShaderProgramBuilder& SetTessControlSource(const char*);
+
+    ShaderProgramBuilder& SetTessEvalSource(const Path&);
+    ShaderProgramBuilder& SetTessEvalSource(std::string_view);
+    ShaderProgramBuilder& SetTessEvalSource(const char*);
+
+    ShaderProgramBuilder& SetGeometrySource(const Path&);
+    ShaderProgramBuilder& SetGeometrySource(std::string_view);
+    ShaderProgramBuilder& SetGeometrySource(const char*);
+
+    ShaderProgramBuilder& SetFragmentSource(const Path&);
+    ShaderProgramBuilder& SetFragmentSource(std::string_view);
+    ShaderProgramBuilder& SetFragmentSource(const char*);
+
+    ShaderProgramBuilder& SetComputeShaderSource(const Path&);
+    ShaderProgramBuilder& SetComputeShaderSource(std::string_view);
+    ShaderProgramBuilder& SetComputeShaderSource(const char*);
 
 private:
     ShaderSource VertexShaderSource;
@@ -74,24 +74,9 @@ private:
     ShaderSource TessEvalShaderSource;
     ShaderSource GeometryShaderSource;
     ShaderSource FragmentShaderSource;
-};
+    ShaderSource ComputeShaderSource;
 
-struct ComputeShaderProgramBuilder final : ShaderProgramBuilder
-{
-    using Path = std::filesystem::path;
+    static GLuint CompileShader(const ShaderSource&, GLenum);
 
-    // Compiles and links the attached source into an OpenGL shader program. Returns the name of the program if
-    // compiling/linking was successful, 0 otherwise.
-    GLuint Build() override;
-
-    // Returns true if a valid GLSL shader program could be compiled with the set of sources attached.
-    // Does not validate whether the attached source compiles to form a working program.
-    bool IsValidConfiguration() override;
-
-    ComputeShaderProgramBuilder& SetSource(const Path&);
-    ComputeShaderProgramBuilder& SetSource(std::string_view);
-    ComputeShaderProgramBuilder& SetSource(const char*);
-
-private:
-    ShaderSource Source;
+    static void PrintInfoLog(GLuint);
 };
