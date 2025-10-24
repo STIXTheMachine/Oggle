@@ -40,7 +40,6 @@ R"(
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
 void main()
 {
-asdf
     // do absolutely nothing
 }
 )";
@@ -144,16 +143,6 @@ int main() {
         { -0.5f, -0.5f, -0.5f }, // Left bottom back
     };
 
-    ShaderProgramBuilder Compute;
-    Compute.SetComputeShaderSource(ComputeShaderSource);
-    GLuint ComputeProgram = Compute.Build();
-    glUseProgram(ComputeProgram);
-    glDispatchCompute(1, 1, 1);
-    // if (GLenum E = glGetError(); E != GL_NO_ERROR)
-    // {
-    //     auto Eint = static_cast<unsigned int>(E);
-    //     std::println("Error: {}", Eint);
-    // }
 
     GLuint VAO, VBO, EBO;
     glCreateBuffers(1, &VBO);
@@ -166,22 +155,18 @@ int main() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex_P::Stride, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(0);
 
-    unsigned int VertexShader   = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int FragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    unsigned int ShaderProgram  = glCreateProgram();
+    ShaderProgramBuilder Builder;
 
-    glShaderSource(VertexShader,   1, &VertexShaderSource, nullptr);
-    glShaderSource(FragmentShader, 1, &FragmentShaderSource, nullptr);
+    Builder.SetComputeSource(ComputeShaderSource);
+    GLuint ComputeProgram = Builder.Build();
 
-    glCompileShader(VertexShader);
-    glCompileShader(FragmentShader);
+    glUseProgram(ComputeProgram);
+    glDispatchCompute(1, 1, 1);
 
-    glAttachShader(ShaderProgram, VertexShader);
-    glAttachShader(ShaderProgram, FragmentShader);
-    glLinkProgram(ShaderProgram);
-
-    glDeleteShader(VertexShader);
-    glDeleteShader(FragmentShader);
+    Builder.Reset();
+    Builder.SetVertexSource(VertexShaderSource);
+    Builder.SetFragmentSource(FragmentShaderSource);
+    GLuint ShaderProgram = Builder.Build();
 
     auto TriangleColor = FloatColor { Palettes::Catppuccin::Mocha::Peach };
     auto InColorLoc = glGetUniformLocation(ShaderProgram, "InColor");

@@ -42,7 +42,12 @@ struct ShaderProgramBuilder final : NonCopyable, NonMovable
     // Does not validate that any of the attached sources actually compile or link to form a working program.
     bool IsValidConfiguration() const;
 
+    // Compiles and links attaached sources into a program and returns the name of the resulting program.
+    // Returns name 0 if compilation or linking failed.
     GLuint Build();
+
+    // Resets all attached sources to prepare for building a new program.
+    void Reset();
 
     ShaderProgramBuilder& SetVertexSource(const Path&);
     ShaderProgramBuilder& SetVertexSource(std::string_view);
@@ -64,17 +69,17 @@ struct ShaderProgramBuilder final : NonCopyable, NonMovable
     ShaderProgramBuilder& SetFragmentSource(std::string_view);
     ShaderProgramBuilder& SetFragmentSource(const char*);
 
-    ShaderProgramBuilder& SetComputeShaderSource(const Path&);
-    ShaderProgramBuilder& SetComputeShaderSource(std::string_view);
-    ShaderProgramBuilder& SetComputeShaderSource(const char*);
+    ShaderProgramBuilder& SetComputeSource(const Path&);
+    ShaderProgramBuilder& SetComputeSource(std::string_view);
+    ShaderProgramBuilder& SetComputeSource(const char*);
 
 private:
-    ShaderSource VertexShaderSource;
-    ShaderSource TessControlShaderSource;
-    ShaderSource TessEvalShaderSource;
-    ShaderSource GeometryShaderSource;
-    ShaderSource FragmentShaderSource;
-    ShaderSource ComputeShaderSource;
+    ShaderSource Vertex;
+    ShaderSource TessControl;
+    ShaderSource TessEval;
+    ShaderSource Geometry;
+    ShaderSource Fragment;
+    ShaderSource Compute;
 
     static GLuint CompileShader(const ShaderSource&, GLenum);
 
