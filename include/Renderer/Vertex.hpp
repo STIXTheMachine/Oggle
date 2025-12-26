@@ -66,7 +66,7 @@ struct TVertex<SingleAttribute> : SingleAttribute
     const decltype(AttributeType::Value)& Get() const { return this->Value; };
 
     template<typename... Args>
-    TVertex(Args&&... args) : Base {AttributeType { std::forward<Args>(args)... } } {};
+    TVertex(Args&&... args) : Base { AttributeType { std::forward<Args>(args)... } } {};
 
 private:
     using AttributeType = Base::AttributeType;

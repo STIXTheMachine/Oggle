@@ -2,7 +2,7 @@
 #include <print>
 #include <Renderer/ShaderProgramBuilder.hpp>
 
-void ShaderSource::SetFromFile(const std::filesystem::path& NewSourceFile)
+void ShaderSource::Load(const std::filesystem::path& NewSourceFile)
 {
     if (!std::filesystem::exists(NewSourceFile))
     {
@@ -24,7 +24,7 @@ void ShaderSource::SetFromFile(const std::filesystem::path& NewSourceFile)
     bHasSource = true;
 }
 
-void ShaderSource::SetFromString(const std::string_view NewSourceString)
+void ShaderSource::Load(const std::string_view NewSourceString)
 {
     std::string Temp { NewSourceString };
     std::swap(SourceString, Temp);
@@ -41,14 +41,13 @@ void ShaderSource::Reset()
 
 bool ShaderProgramBuilder::IsValidConfiguration() const
 {
-    const bool HasComputeShader  = Compute.HasSource();
-    const bool HasAnyOtherShader =
-            Vertex.HasSource()
-            || TessControl.HasSource()
-            || TessEval.HasSource()
-            || Geometry.HasSource()
-            || Fragment.HasSource();
-    const bool IsValidComputeShader = HasComputeShader && !HasAnyOtherShader;
+    const bool HasComputeShader      = Compute.HasSource();
+    const bool HasNonComputeShader   = Vertex.HasSource()
+                                    || TessControl.HasSource()
+                                    || TessEval.HasSource()
+                                    || Geometry.HasSource()
+                                    || Fragment.HasSource();
+    const bool IsValidComputeShader  = HasComputeShader && !HasNonComputeShader;
 
     const bool HasVertexAndFragShader   = Vertex.HasSource() && Fragment.HasSource();
     const bool HasZeroOrBothTessShaders = (TessControl.HasSource() == TessEval.HasSource());
@@ -66,47 +65,35 @@ GLuint ShaderProgramBuilder::Build()
         return 0;
     }
 
-    GLuint VertexID {}, TessControlID {}, TessEvalID {}, GeometryID {}, FragmentID {}, ComputeID {};
-    GLuint Program = glCreateProgram();
+    const GLuint Program = glCreateProgram();
 
-    if (Vertex.HasSource())
+    struct ShaderCompileData { ShaderSource& Source; GLenum Type {}; mutable GLuint ID {}; };
+
+    ShaderCompileData Shaders[] =  {
+        { Vertex, GL_VERTEX_SHADER },
+        { TessControl, GL_TESS_CONTROL_SHADER },
+        { TessEval, GL_TESS_EVALUATION_SHADER },
+        { Geometry, GL_GEOMETRY_SHADER },
+        { Fragment, GL_FRAGMENT_SHADER },
+        { Compute, GL_COMPUTE_SHADER }
+    };
+
+    for (const auto& [Source, Type, ID] : Shaders)
     {
-        VertexID = CompileShader(Vertex, GL_VERTEX_SHADER);
-        glAttachShader(Program, VertexID);
-    }
-    if (TessControl.HasSource())
-    {
-        TessControlID = CompileShader(TessControl, GL_TESS_CONTROL_SHADER);
-        glAttachShader(Program, TessControlID);
-    }
-    if (TessEval.HasSource())
-    {
-        TessEvalID = CompileShader(TessEval, GL_TESS_EVALUATION_SHADER);
-        glAttachShader(Program, TessEvalID);
-    }
-    if (Geometry.HasSource())
-    {
-        GeometryID = CompileShader(Geometry, GL_GEOMETRY_SHADER);
-        glAttachShader(Program, GeometryID);
-    }
-    if (Fragment.HasSource())
-    {
-        FragmentID = CompileShader(Fragment, GL_FRAGMENT_SHADER);
-        glAttachShader(Program, FragmentID);
-    }
-    if (Compute.HasSource())
-    {
-        ComputeID = CompileShader(Compute, GL_COMPUTE_SHADER);
-        glAttachShader(Program, ComputeID);
+        if (Source.HasSource())
+        {
+            ID = CompileShader(Source, Type);
+            glAttachShader(Program, ID);
+        }
     }
 
     glLinkProgram(Program);
 
-    for (const auto& Shader : { VertexID, TessControlID, TessEvalID, GeometryID, FragmentID, ComputeID })
+    for (const auto& Shader : Shaders)
     {
-        if (glIsShader(Shader))
+        if (glIsShader(Shader.ID))
         {
-            glDeleteShader(Shader);
+            glDeleteShader(Shader.ID);
         }
     }
 
@@ -125,107 +112,107 @@ void ShaderProgramBuilder::Reset()
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(const Path& NewSourcePath)
 {
-    Vertex.SetFromFile(NewSourcePath);
+    Vertex.Load(NewSourcePath);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(std::string_view NewSourceString)
 {
-    Vertex.SetFromString(NewSourceString);
+    Vertex.Load(NewSourceString);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(const char* NewSourceString)
 {
-    Vertex.SetFromString( std::string_view { NewSourceString } );
+    Vertex.Load( std::string_view { NewSourceString } );
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(const Path& NewSourcePath)
 {
-    TessControl.SetFromFile(NewSourcePath);
+    TessControl.Load(NewSourcePath);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(std::string_view NewSourceString)
 {
-    TessControl.SetFromString(NewSourceString);
+    TessControl.Load(NewSourceString);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(const char* NewSourceString)
 {
-    TessControl.SetFromString( std::string_view { NewSourceString } );
+    TessControl.Load( std::string_view { NewSourceString } );
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(const Path& NewSourcePath)
 {
-    TessEval.SetFromFile(NewSourcePath);
+    TessEval.Load(NewSourcePath);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(std::string_view NewSourceString)
 {
-    TessControl.SetFromString(NewSourceString);
+    TessControl.Load(NewSourceString);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(const char* NewSourceString)
 {
-    TessEval.SetFromString( std::string_view { NewSourceString } );
+    TessEval.Load( std::string_view { NewSourceString } );
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(const Path& NewSourcePath)
 {
-    Geometry.SetFromFile(NewSourcePath);
+    Geometry.Load(NewSourcePath);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(std::string_view NewSourceString)
 {
-    Geometry.SetFromString(NewSourceString);
+    Geometry.Load(NewSourceString);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(const char* NewSourceString)
 {
-    Geometry.SetFromString( std::string_view { NewSourceString } );
+    Geometry.Load( std::string_view { NewSourceString } );
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(const Path& NewSourcePath)
 {
-    Fragment.SetFromFile(NewSourcePath);
+    Fragment.Load(NewSourcePath);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(std::string_view NewSourceString)
 {
-    Fragment.SetFromString(NewSourceString);
+    Fragment.Load(NewSourceString);
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(const char* NewSourceString)
 {
-    Fragment.SetFromString( std::string_view { NewSourceString } );
+    Fragment.Load( std::string_view { NewSourceString } );
     return *this;
 }
 
 ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(const Path& NewSourcePath)
 {
-    Compute.SetFromFile(NewSourcePath);
+    Compute.Load(NewSourcePath);
     return *this;
 }
 ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(std::string_view NewSourceString)
 {
-    Compute.SetFromString(NewSourceString);
+    Compute.Load(NewSourceString);
     return *this;
 }
 ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(const char* NewSourceString)
 {
-    Compute.SetFromString( std::string_view { NewSourceString } );
+    Compute.Load( std::string_view { NewSourceString } );
     return *this;
 }
 

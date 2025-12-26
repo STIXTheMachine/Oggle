@@ -11,11 +11,11 @@ struct ShaderSource
     using NullablePath = std::optional<std::filesystem::path>;
 
     // Sets SourceFile to NewSourceFile and also streams the contents of NewSourceFile into SourceString.
-                  void             SetFromFile(const std::filesystem::path& NewSourceFile);
+                  void             Load(const std::filesystem::path& NewSourceFile);
 
     // Copies the contents of NewSourceString into SourceString. Also invalidates SourceFile.
     // Use SetFromFile if you want to set the source from a file.
-                  void             SetFromString(std::string_view NewSourceString);
+                  void             Load(std::string_view NewSourceString);
 
     // Clears the source file path and releases the source file string
                   void             Reset();
