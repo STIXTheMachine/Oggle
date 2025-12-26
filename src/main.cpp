@@ -157,15 +157,15 @@ int main() {
 
     ShaderProgramBuilder Builder;
 
-    Builder.SetComputeSource(ComputeShaderSource);
+    Builder.ComputeSource(ComputeShaderSource);
     GLuint ComputeProgram = Builder.Build();
 
     glUseProgram(ComputeProgram);
     glDispatchCompute(1, 1, 1);
 
     Builder.Reset();
-    Builder.SetVertexSource(VertexShaderSource);
-    Builder.SetFragmentSource(FragmentShaderSource);
+    Builder.VertexSource(VertexShaderSource);
+    Builder.FragmentSource(FragmentShaderSource);
     GLuint ShaderProgram = Builder.Build();
 
     auto TriangleColor = FloatColor { Palettes::Catppuccin::Mocha::Peach };
@@ -193,7 +193,7 @@ int main() {
         }
 
         glDrawArrays(GL_LINE_LOOP, 0, 3);
-        
+
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
     }

@@ -2,7 +2,9 @@
 #include <print>
 #include <Renderer/ShaderProgramBuilder.hpp>
 
-void ShaderSource::Load(const std::filesystem::path& NewSourceFile)
+#include "Core/Tuple.hpp"
+
+void ShaderSource::Load(const std::filesystem::path& NewSourceFile, GLenum InType)
 {
     if (!std::filesystem::exists(NewSourceFile))
     {
@@ -22,14 +24,16 @@ void ShaderSource::Load(const std::filesystem::path& NewSourceFile)
     std::swap(SourceString, Temp);
 
     bHasSource = true;
+    Type = InType;
 }
 
-void ShaderSource::Load(const std::string_view NewSourceString)
+void ShaderSource::Load(const std::string_view NewSourceString, GLenum InType)
 {
     std::string Temp { NewSourceString };
     std::swap(SourceString, Temp);
     SourceFile.reset();
     bHasSource = true;
+    Type = InType;
 }
 
 void ShaderSource::Reset()
@@ -37,6 +41,7 @@ void ShaderSource::Reset()
     SourceString.clear();
     SourceFile.reset();
     bHasSource = false;
+    Type = GL_INVALID_ENUM;
 }
 
 bool ShaderProgramBuilder::IsValidConfiguration() const
@@ -67,33 +72,31 @@ GLuint ShaderProgramBuilder::Build()
 
     const GLuint Program = glCreateProgram();
 
-    struct ShaderCompileData { ShaderSource& Source; GLenum Type {}; mutable GLuint ID {}; };
-
-    ShaderCompileData Shaders[] =  {
-        { Vertex, GL_VERTEX_SHADER },
-        { TessControl, GL_TESS_CONTROL_SHADER },
-        { TessEval, GL_TESS_EVALUATION_SHADER },
-        { Geometry, GL_GEOMETRY_SHADER },
-        { Fragment, GL_FRAGMENT_SHADER },
-        { Compute, GL_COMPUTE_SHADER }
+    TTuple<const ShaderSource&, GLuint> Shaders[] =  {
+        { Vertex, 0 },
+        { TessControl, 0 },
+        { TessEval, 0 },
+        { Geometry, 0 },
+        { Fragment, 0 },
+        { Compute, 0 }
     };
 
-    for (const auto& [Source, Type, ID] : Shaders)
+    for (auto& [Source, ID] : Shaders)
     {
         if (Source.HasSource())
         {
-            ID = CompileShader(Source, Type);
+            ID = CompileShader(Source);
             glAttachShader(Program, ID);
         }
     }
 
     glLinkProgram(Program);
 
-    for (const auto& Shader : Shaders)
+    for (auto& [Source, ID] : Shaders)
     {
-        if (glIsShader(Shader.ID))
+        if (glIsShader(ID))
         {
-            glDeleteShader(Shader.ID);
+            glDeleteShader(ID);
         }
     }
 
@@ -110,114 +113,153 @@ void ShaderProgramBuilder::Reset()
     Compute.Reset();
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::VertexSource(const Path& NewSourcePath)
 {
-    Vertex.Load(NewSourcePath);
+    Vertex.Load(NewSourcePath, GL_VERTEX_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(std::string_view NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::VertexSource(std::string_view NewSourceString)
 {
-    Vertex.Load(NewSourceString);
+    Vertex.Load(NewSourceString, GL_VERTEX_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetVertexSource(const char* NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::VertexSource(const char* NewSourceString)
 {
-    Vertex.Load( std::string_view { NewSourceString } );
+    Vertex.Load(std::string_view { NewSourceString } , GL_VERTEX_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::VertexSource(const ShaderSource& InSource)
 {
-    TessControl.Load(NewSourcePath);
+    Vertex = InSource;
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(std::string_view NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessControlSource(const Path& NewSourcePath)
 {
-    TessControl.Load(NewSourceString);
+    TessControl.Load(NewSourcePath, GL_TESS_CONTROL_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessControlSource(const char* NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessControlSource(std::string_view NewSourceString)
 {
-    TessControl.Load( std::string_view { NewSourceString } );
+    TessControl.Load(NewSourceString, GL_TESS_CONTROL_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::TessControlSource(const char* NewSourceString)
 {
-    TessEval.Load(NewSourcePath);
+    TessControl.Load(std::string_view { NewSourceString } , GL_TESS_CONTROL_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(std::string_view NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessControlSource(const ShaderSource& InSource)
 {
-    TessControl.Load(NewSourceString);
+    TessControl = InSource;
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetTessEvalSource(const char* NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessEvalSource(const Path& NewSourcePath)
 {
-    TessEval.Load( std::string_view { NewSourceString } );
+    TessEval.Load(NewSourcePath, GL_TESS_EVALUATION_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::TessEvalSource(std::string_view NewSourceString)
 {
-    Geometry.Load(NewSourcePath);
+    TessControl.Load(NewSourceString, GL_TESS_EVALUATION_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(std::string_view NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessEvalSource(const char* NewSourceString)
 {
-    Geometry.Load(NewSourceString);
+    TessEval.Load(std::string_view { NewSourceString } , GL_TESS_EVALUATION_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetGeometrySource(const char* NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::TessEvalSource(const ShaderSource& InSource)
 {
-    Geometry.Load( std::string_view { NewSourceString } );
+    TessEval = InSource;
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::GeometrySource(const Path& NewSourcePath)
 {
-    Fragment.Load(NewSourcePath);
+    Geometry.Load(NewSourcePath, GL_GEOMETRY_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(std::string_view NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::GeometrySource(std::string_view NewSourceString)
 {
-    Fragment.Load(NewSourceString);
+    Geometry.Load(NewSourceString, GL_GEOMETRY_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetFragmentSource(const char* NewSourceString)
+ShaderProgramBuilder& ShaderProgramBuilder::GeometrySource(const char* NewSourceString)
 {
-    Fragment.Load( std::string_view { NewSourceString } );
+    Geometry.Load(std::string_view { NewSourceString } , GL_GEOMETRY_SHADER);
     return *this;
 }
 
-ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(const Path& NewSourcePath)
+ShaderProgramBuilder& ShaderProgramBuilder::GeometrySource(const ShaderSource& InSource)
 {
-    Compute.Load(NewSourcePath);
-    return *this;
-}
-ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(std::string_view NewSourceString)
-{
-    Compute.Load(NewSourceString);
-    return *this;
-}
-ShaderProgramBuilder& ShaderProgramBuilder::SetComputeSource(const char* NewSourceString)
-{
-    Compute.Load( std::string_view { NewSourceString } );
+    Geometry = InSource;
     return *this;
 }
 
-GLuint ShaderProgramBuilder::CompileShader(const ShaderSource& Source, GLenum Type)
+ShaderProgramBuilder& ShaderProgramBuilder::FragmentSource(const Path& NewSourcePath)
 {
+    Fragment.Load(NewSourcePath, GL_FRAGMENT_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::FragmentSource(std::string_view NewSourceString)
+{
+    Fragment.Load(NewSourceString, GL_FRAGMENT_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::FragmentSource(const char* NewSourceString)
+{
+    Fragment.Load(std::string_view { NewSourceString } , GL_FRAGMENT_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::FragmentSource(const ShaderSource& InSource)
+{
+    Fragment = InSource;
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::ComputeSource(const Path& NewSourcePath)
+{
+    Compute.Load(NewSourcePath, GL_COMPUTE_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::ComputeSource(std::string_view NewSourceString)
+{
+    Compute.Load(NewSourceString, GL_COMPUTE_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::ComputeSource(const char* NewSourceString)
+{
+    Compute.Load(std::string_view { NewSourceString } , GL_COMPUTE_SHADER);
+    return *this;
+}
+
+ShaderProgramBuilder& ShaderProgramBuilder::ComputeSource(const ShaderSource& InSource)
+{
+    Compute = InSource;
+    return *this;
+}
+
+GLuint ShaderProgramBuilder::CompileShader(const ShaderSource& Source)
+{
+    const GLenum Type   = Source.GetType();
     const GLuint Shader = glCreateShader(Type);
     const char*  Temp   = Source.GetSourceString().data();
 
