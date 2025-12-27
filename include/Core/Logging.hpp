@@ -3,6 +3,7 @@
 #include <string_view>
 #include <format>
 #include <print>
+#include <Core/OggleType.hpp>
 
 #define LOG_CATEGORY_STRINGIFY_IMPL(X) #X
 #define LOG_CATEGORY_STRINGIFY(X) LOG_CATEGORY_STRINGIFY_IMPL(X)
