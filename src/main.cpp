@@ -6,6 +6,7 @@
 #include <Renderer/ShaderProgramBuilder.hpp>
 #include <glm/common.hpp>
 #include <Core/TypeBases.hpp>
+#include <Core/Logging.hpp>
 
 #define BUFFER_OFFSET(Offset) ((void*)(Offset))
 
@@ -98,6 +99,8 @@ void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLenum Sev
 }
 
 int main() {
+
+    Log("Hello, {}", "World!");
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
