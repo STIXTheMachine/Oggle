@@ -20,6 +20,7 @@ endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
+find_package(spdlog REQUIRED)
 
 # GLFW
 set(GLFW_DIR "ThirdParty/Vendor/glfw-3.4")
@@ -37,11 +38,11 @@ include(FetchContent)
 # GLM
 FetchContent_Declare(
         glm
-        GIT_REPOSITORY	https://github.com/g-truc/glm.git
-        GIT_TAG 	0af55ccecd98d4e5a8d1fad7de25ba429d60e863 #refs/tags/1.0.1
+        GIT_REPOSITORY https://github.com/g-truc/glm.git
+        GIT_TAG 	   0af55ccecd98d4e5a8d1fad7de25ba429d60e863 # 1.0.1
 )
-
 FetchContent_MakeAvailable(glm)
+
 
 target_include_directories(${TARGET} PRIVATE "include")
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Headers")
@@ -51,6 +52,7 @@ target_link_libraries(${TARGET} PRIVATE
         glbinding::glbinding
         glbinding::glbinding-aux
         glm::glm
+        spdlog::spdlog_header_only
 )
 
 
