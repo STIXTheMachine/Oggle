@@ -3,6 +3,55 @@
 #include <Core/OggleType.hpp>
 #include <Core/Logging/Sinks.hpp>
 
+/// Thread-safe logging system with configurable verbosity levels and output destinations.
+///
+/// # Overview
+/// This logging system provides category-based message filtering and routing to multiple sinks.
+/// Each log category independently controls its verbosity threshold and output destinations.
+///
+/// # Basic Usage
+/// Declare a category (typically in a header)
+/// DECLARE_LOG_CATEGORY(MyCategory, Info, Default)
+///
+/// Define it (in exactly one translation unit)
+/// DEFINE_LOG_CATEGORY(MyCategory)
+///
+/// Log unformatted messages
+/// LOG("Application started");                           // Uses Default category
+/// LOG(MyCategory, "Cache miss");                        // Uses MyCategory with default verbosity/sinks
+/// LOG(MyCategory, Warning, "Low memory");               // Specifies verbosity
+/// LOG(MyCategory, Error, StdErr, "Critical failure");   // Specifies verbosity and sinks
+///
+/// // Log formatted messages
+/// LOGFMT("Player count: {}", count);
+/// LOGFMT(MyCategory, "Resource usage: {}/{}", current, max);
+/// LOGFMT(Physics, Verbose, "Tick time: {:.2f}ms", deltaTime);
+///
+/// # Verbosity Filtering
+/// Messages are filtered in two stages:
+/// 1. Global maximum: GMaxLogLevel() applies across all categories
+/// 2. Category threshold: Each category's Verbosity member
+///
+/// A message is processed only if its verbosity <= both thresholds.
+/// Runtime verbosity can be adjusted per category: `LogMyCategory::Verbosity = ELogVerbosity::Error;`
+///
+/// # Sink Routing
+/// After passing verbosity filters, messages route to configured sinks:
+/// - StdOut: Console standard output
+/// - StdErr: Console error output
+/// - GlobalFile: Shared "Oggle_<timestamp>.log" in Logs/
+/// - OwnFile: Category-specific "<CategoryName>_<timestamp>.log" in Logs/Log<CategoryName>/
+///
+/// Default sink configuration sends to StdOut | GlobalFile | OwnFile.
+///
+/// # Thread Safety
+/// All sinks serialize concurrent writes. Messages from different threads may interleave
+/// between calls but individual messages are atomic.
+///
+/// see ELogVerbosity for severity levels
+/// see ELogSinks for output destination flags
+/// see DECLARE_LOG_CATEGORY, DEFINE_LOG_CATEGORY for category definition
+/// see LOG, LOGFMT for logging macros
 namespace Oggle::Logging
 {
 /// Specifies the destinations (sinks) for log messages.
