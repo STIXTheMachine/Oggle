@@ -20,7 +20,6 @@ endif()
 
 # OpenGL
 find_package(OpenGL REQUIRED)
-find_package(spdlog REQUIRED)
 
 # GLFW
 set(GLFW_DIR "ThirdParty/Vendor/glfw-3.4")
@@ -52,7 +51,6 @@ target_link_libraries(${TARGET} PRIVATE
         glbinding::glbinding
         glbinding::glbinding-aux
         glm::glm
-        spdlog::spdlog_header_only
 )
 
 

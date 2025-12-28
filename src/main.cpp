@@ -1,5 +1,4 @@
 #include <iostream>
-#include <print>
 #include <Renderer/GraphicsLibs.hpp>
 #include <Renderer/Vertex.hpp>
 #include <Core/ColorPalettes.hpp>
@@ -50,10 +49,7 @@ enum {
     GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
-
 int main() {
-
-    Log("Hello, {}", "World!");
 
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;

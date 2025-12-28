@@ -1,6 +1,6 @@
 #pragma once
 #include <Renderer/GraphicsLibs.hpp>
-#include "Core/Logging.hpp"
+#include "Core/Logging/Logging.hpp"
 
 DECLARE_LOG_CATEGORY(OpenGL, Info, Default)
 
@@ -9,14 +9,14 @@ inline void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLe
 {
     if (Id == 131169 || Id == 131185 || Id == 131218 || Id == 131204) return;
 
-    const ELogVerbosity Verbosity = [Severity]()
+    const Oggle::Logging::ELogVerbosity Verbosity = [Severity]()
     {
         switch (Severity)
         {
-            case GL_DEBUG_SEVERITY_HIGH:   return ELogVerbosity::Error;
-            case GL_DEBUG_SEVERITY_MEDIUM: return ELogVerbosity::Warning;
-            case GL_DEBUG_SEVERITY_LOW:    return ELogVerbosity::Warning;
-            default:                       return ELogVerbosity::Info;
+            case GL_DEBUG_SEVERITY_HIGH:   return Oggle::Logging::ELogVerbosity::Error;
+            case GL_DEBUG_SEVERITY_MEDIUM: return Oggle::Logging::ELogVerbosity::Warning;
+            case GL_DEBUG_SEVERITY_LOW:    return Oggle::Logging::ELogVerbosity::Warning;
+            default:                       return Oggle::Logging::ELogVerbosity::Info;
         }
     }();
 
