@@ -49,8 +49,8 @@ enum {
     GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
-int main() {
-
+int main()
+{
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return GLFW_INIT_FAILED;

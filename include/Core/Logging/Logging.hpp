@@ -5,19 +5,6 @@
 
 namespace Oggle::Logging
 {
-/// Global sink for logging messages to standard output (console).
-/// Sink used by ELogSinks::StdOut.
-inline BasicStdOutSink GStdOut;
-
-/// Global sink for logging messages to standard error (console).
-/// Sink used by ELogSinks::StdErr.
-inline BasicStdErrSink GStdErr;
-
-/// Global sink for logging messages to a timestamped log file.
-/// Writes to a file named "Oggle_YYYY-MM-DD_HH-MM-SS.log"
-/// Sink used by ELogSinks::GlobalFile.
-inline BasicFileSink GLogFile { "Oggle" };
-
 /// Specifies the destinations (sinks) for log messages.
 ///
 /// Each log message can be sent to one or more sinks, which control where the message is recorded or displayed.
@@ -91,41 +78,9 @@ constexpr std::strong_ordering operator<=>(ELogVerbosity Lhs, ELogVerbosity Rhs)
 /// Can be used to globally supress log messages across all categories. Use with caution.
 /// Set to ELogVerbosity::VeryVerbose to disable global suppression.
 /// See also: ELogVerbosity
-inline ELogVerbosity GMaxLogLevel { ELogVerbosity::VeryVerbose };
+ELogVerbosity& GMaxLogLevel();
 
-template<typename T>
-concept CLogCategory = requires
-{
-    { T::CategoryName     } -> std::same_as<const std::string_view&>;
-    { T::DefaultVerbosity } -> std::same_as<const ELogVerbosity&>;
-    { T::DefaultSinks     } -> std::same_as<const ELogSinks&>;
-    { T::Verbosity        } -> std::same_as<ELogVerbosity&>;
-    { T::SelfLogFile      } -> std::same_as<BasicFileSink&>;
-};
+#include <Core/Logging/LogImpl.inl>
 
 } // namespace Oggle::Logging
-
-#define LOG_CATEGORY_STRINGIFY_IMPL(X) #X
-#define LOG_CATEGORY_STRINGIFY(X) LOG_CATEGORY_STRINGIFY_IMPL(X)
-
-#define LOG_CATEGORY_NAME_PASTE(Name) Log##Name
-#define LOG_CATEGORY_NAME(Name) LOG_CATEGORY_NAME_PASTE(Name)
-#define LOG_CATEGORY_NAME_STRING(Name) LOG_CATEGORY_STRINGIFY(LOG_CATEGORY_NAME(Name))
-
-#define DECLARE_LOG_CATEGORY(InName, InDefaultVerbosity, InDefaultSinks) \
-struct LOG_CATEGORY_NAME(InName) \
-{ \
-    LOG_CATEGORY_NAME(InName)() = delete; \
-    using enum Oggle::Logging::ELogVerbosity; \
-    using enum Oggle::Logging::ELogSinks; \
-    static constexpr std::string_view                 CategoryName     { LOG_CATEGORY_NAME_STRING(InName) };\
-    static constexpr Oggle::Logging::ELogVerbosity    DefaultVerbosity { InDefaultVerbosity }; \
-    static constexpr Oggle::Logging::ELogSinks        DefaultSinks     { InDefaultSinks }; \
-    static inline    Oggle::Logging::ELogVerbosity    Verbosity        { DefaultVerbosity }; \
-    static inline    Oggle::Logging::BasicFileSink    SelfLogFile      { CategoryName, LOG_CATEGORY_NAME_STRING(InName) }; \
-}; \
-static_assert(Oggle::Logging::CLogCategory<LOG_CATEGORY_NAME(InName)>); \
-
-DECLARE_LOG_CATEGORY(Default, Info, Default);
-
-#include <Core/Logging/LogFunctions.inl>
+DECLARE_LOG_CATEGORY(Default, Info, Default)
