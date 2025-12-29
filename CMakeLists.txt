@@ -11,6 +11,10 @@ add_executable(
     ${SOURCES}
 )
 
+# Make MSVC behave itself. The fact that the standard compliant preprocessor isn't the default is fucking wild.
+if(MSVC)
+    target_compile_options(Oggle PRIVATE /Zc:preprocessor)
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebugInfo")
     target_compile_definitions(${TARGET} PRIVATE BUILD_DEBUG=1)
