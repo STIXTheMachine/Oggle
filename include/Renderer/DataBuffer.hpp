@@ -3,6 +3,7 @@
 #include <vector>
 #include <concepts>
 #include <format>
+#include <ranges>
 
 
 constexpr std::byte operator""_b(const unsigned long long Val)
@@ -75,31 +76,33 @@ struct std::formatter<DataBuffer>
 
     auto format(const DataBuffer& Buffer, std::format_context& Ctx) const
     {
+        using namespace std::views;
         auto Out = Ctx.out();
 
-        std::format_to(Out, "{}", "============== Begin Buffer Object ==============\n[");
+        std::string_view Header { "============== Begin Buffer Object ==============\n[" };
+        std::string_view Footer { "]\n=============== End Buffer Object ===============" };
 
-        for (size_t NumBytesWritten = 0; const auto Byte : Buffer.GetData())
+        std::format_to(Out, "{}", Header);
+
+        for (const auto [Index, Byte] : Buffer.GetData() | enumerate)
         {
-            const auto ByteInt = std::to_integer<unsigned int>(Byte);
+           const auto ByteAsInt = std::to_integer<unsigned int>(Byte);
+           std::format_to(Out, "{:02X}", ByteAsInt);
 
-            std::format_to(Out, "{:02X}", ByteInt);
-            ++NumBytesWritten;
-
-            if (NumBytesWritten < Buffer.Size())
-            {
-                if (NumBytesWritten % 16 == 0)
-                {
-                    std::format_to(Out, "{}", "]\n[");
-                }
-                else
-                {
-                    std::format_to(Out, "{}", " ");
-                }
-            }
+           if ((Index + 1) < Buffer.Size())
+           {
+               if ((Index + 1) % 16 == 0)
+               {
+                   std::format_to(Out, "{}", "]\n[");
+               }
+               else
+               {
+                   std::format_to(Out, "{}", " ");
+               }
+           }
         }
 
-        std::format_to(Out, "{}", "]\n=============== End Buffer Object ===============");
+        std::format_to(Out, "{}", Footer);
 
         return Out;
     }
