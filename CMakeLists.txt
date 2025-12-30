@@ -5,7 +5,13 @@ set(CMAKE_CXX_STANDARD 23)
 set(TARGET ${PROJECT_NAME})
 
 
-file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
+file(
+    GLOB_RECURSE
+    SOURCES
+    CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+)
+
 add_executable(
     ${TARGET}
     ${SOURCES}
@@ -15,6 +21,14 @@ add_executable(
 if(MSVC)
     target_compile_options(Oggle PRIVATE /Zc:preprocessor)
 endif()
+
+add_custom_target(COPY_SHADERS ALL
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Shaders/
+        ${CMAKE_BINARY_DIR}/Assets/Shaders
+)
+
+add_dependencies(${PROJECT_NAME} COPY_SHADERS)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebugInfo")
     target_compile_definitions(${TARGET} PRIVATE BUILD_DEBUG=1)
