@@ -23,9 +23,11 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
     // If fatal, log to all sinks and abort
     if (MessageVerbosity == ELogVerbosity::Fatal)
     {
-        const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
+        // TODO: figure out footguns with this
+        //const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
         std::string Message;
-        Message.reserve(FormattedMessageSize);
+        //Message.reserve(FormattedMessageSize);
+        Message.reserve(256); // Placeholder to try and minimize unnecessary allocations until std::formatted_size is figured out
 
         std::format_to(std::back_inserter(Message), "[{}] ", Category::CategoryName);
         std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
@@ -44,9 +46,11 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
         return;
     }
 
-    const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
+    // TODO: figure out footguns with this
+    //const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
     std::string Message;
-    Message.reserve(FormattedMessageSize);
+    //Message.reserve(FormattedMessageSize);
+    Message.reserve(256); // Placeholder to try and minimize unnecessary allocations until std::formatted_size is figured out
 
     std::format_to(std::back_inserter(Message), "[{}] ", Category::CategoryName);
     std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
@@ -93,14 +97,18 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
 
 #define DISPATCH_LOGFMT(_1, _2, _3, _4, _5, NUM_ARGS, ...) NUM_ARGS
 
-#define LOGFMT_1() \
+#define LOGFMT_1(InvalidArg) \
     static_assert(false, "LOGFMT() requires at least two arguments")
+
 #define LOGFMT_2(FormatString, ...) \
     LOGFMT_IMPL(LogDefault, LogDefault::DefaultVerbosity, LogDefault::DefaultSinks, FormatString, __VA_ARGS__)
+
 #define LOGFMT_3(Category, FormatString, ...) \
     LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), LOG_CATEGORY_NAME(Category)::DefaultVerbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, FormatString, __VA_ARGS__)
+
 #define LOGFMT_4(Category, Verbosity, FormatString, ...) \
     LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, FormatString, __VA_ARGS__)
+
 #define LOGFMT_5(Category, Verbosity, Sinks, FormatString, ...) \
     LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, Sinks, FormatString, __VA_ARGS__)
 
