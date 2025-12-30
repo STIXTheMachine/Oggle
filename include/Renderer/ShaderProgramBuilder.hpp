@@ -8,7 +8,7 @@
 // the source code was loaded from, if it was loaded from a file.
 struct ShaderSource
 {
-    using NullablePath = std::optional<std::filesystem::path>;
+    using Path = std::filesystem::path;
     ShaderSource() = default;
     explicit ShaderSource(GLenum InType) : Type(InType) {};
 
@@ -24,7 +24,7 @@ struct ShaderSource
 
     [[nodiscard]] GLenum           GetType() const { return Type; };
 
-    [[nodiscard]] NullablePath     GetSourceFilePath() const { return SourceFile; };
+    [[nodiscard]] std::optional<Path> GetSourceFilePath() const { return SourceFile; };
 
     [[nodiscard]] std::string_view GetSourceString() const { return SourceString; };
 
@@ -32,11 +32,11 @@ struct ShaderSource
     [[nodiscard]] bool             HasSource() const { return bHasSource; };
 
 private:
-    // Optional to support setting the source string directly
-    NullablePath SourceFile   {};
-    std::string  SourceString {};
-    bool         bHasSource   { false };
-    GLenum       Type         {};
+    static inline Path ShaderDirectory { "Assets/Shaders" };
+    std::optional<Path> SourceFile   {};
+    std::string         SourceString {};
+    bool                bHasSource   { false };
+    GLenum              Type         {};
 };
 
 struct ShaderProgramBuilder final : NonCopyable
@@ -54,35 +54,42 @@ struct ShaderProgramBuilder final : NonCopyable
     // Resets all attached sources to prepare for building a new program.
     void Reset();
 
-    ShaderProgramBuilder& VertexSource(const Path&);
-    ShaderProgramBuilder& VertexSource(std::string_view);
-    ShaderProgramBuilder& VertexSource(const char*);
-    ShaderProgramBuilder& VertexSource(const ShaderSource&);
+    ShaderProgramBuilder& SetVertexSource(const Path&);
+    ShaderProgramBuilder& SetVertexSource(std::string_view);
+    ShaderProgramBuilder& SetVertexSource(const char*);
+    ShaderProgramBuilder& SetVertexSource(const ShaderSource&);
 
-    ShaderProgramBuilder& TessControlSource(const Path&);
-    ShaderProgramBuilder& TessControlSource(std::string_view);
-    ShaderProgramBuilder& TessControlSource(const char*);
-    ShaderProgramBuilder& TessControlSource(const ShaderSource&);
+    ShaderProgramBuilder& SetTessControlSource(const Path&);
+    ShaderProgramBuilder& SetTessControlSource(std::string_view);
+    ShaderProgramBuilder& SetTessControlSource(const char*);
+    ShaderProgramBuilder& SetTessControlSource(const ShaderSource&);
 
-    ShaderProgramBuilder& TessEvalSource(const Path&);
-    ShaderProgramBuilder& TessEvalSource(std::string_view);
-    ShaderProgramBuilder& TessEvalSource(const char*);
-    ShaderProgramBuilder& TessEvalSource(const ShaderSource&);
+    ShaderProgramBuilder& SetTessEvalSource(const Path&);
+    ShaderProgramBuilder& SetTessEvalSource(std::string_view);
+    ShaderProgramBuilder& SetTessEvalSource(const char*);
+    ShaderProgramBuilder& SetTessEvalSource(const ShaderSource&);
 
-    ShaderProgramBuilder& GeometrySource(const Path&);
-    ShaderProgramBuilder& GeometrySource(std::string_view);
-    ShaderProgramBuilder& GeometrySource(const char*);
-    ShaderProgramBuilder& GeometrySource(const ShaderSource&);
+    ShaderProgramBuilder& SetGeometrySource(const Path&);
+    ShaderProgramBuilder& SetGeometrySource(std::string_view);
+    ShaderProgramBuilder& SetGeometrySource(const char*);
+    ShaderProgramBuilder& SetGeometrySource(const ShaderSource&);
 
-    ShaderProgramBuilder& FragmentSource(const Path&);
-    ShaderProgramBuilder& FragmentSource(std::string_view);
-    ShaderProgramBuilder& FragmentSource(const char*);
-    ShaderProgramBuilder& FragmentSource(const ShaderSource&);
+    ShaderProgramBuilder& SetFragmentSource(const Path&);
+    ShaderProgramBuilder& SetFragmentSource(std::string_view);
+    ShaderProgramBuilder& SetFragmentSource(const char*);
+    ShaderProgramBuilder& SetFragmentSource(const ShaderSource&);
 
-    ShaderProgramBuilder& ComputeSource(const Path&);
-    ShaderProgramBuilder& ComputeSource(std::string_view);
-    ShaderProgramBuilder& ComputeSource(const char*);
-    ShaderProgramBuilder& ComputeSource(const ShaderSource&);
+    ShaderProgramBuilder& SetComputeSource(const Path&);
+    ShaderProgramBuilder& SetComputeSource(std::string_view);
+    ShaderProgramBuilder& SetComputeSource(const char*);
+    ShaderProgramBuilder& SetComputeSource(const ShaderSource&);
+
+    const ShaderSource& GetVertexSource()      { return Vertex; };
+    const ShaderSource& GetTessControlSource() { return TessControl; };
+    const ShaderSource& GetTessEvalSource()    { return TessEval; }
+    const ShaderSource& GetGeometrySource()    { return Geometry; };
+    const ShaderSource& GetFragmentSource()    { return Fragment; }
+    const ShaderSource& GetComputeSource()     { return Compute; }
 
 private:
     ShaderSource Vertex      { GL_VERTEX_SHADER };
@@ -91,6 +98,7 @@ private:
     ShaderSource Geometry    { GL_GEOMETRY_SHADER };
     ShaderSource Fragment    { GL_FRAGMENT_SHADER };
     ShaderSource Compute     { GL_COMPUTE_SHADER };
+
 
     static GLuint CompileShader(const ShaderSource&);
 
