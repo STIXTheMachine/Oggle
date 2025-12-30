@@ -1,4 +1,5 @@
 #pragma once
+#include <Core/Logging/Logging.hpp>
 #include <Renderer/GraphicsLibs.hpp>
 #include <Core/TypeBases.hpp>
 #include <filesystem>
@@ -104,3 +105,5 @@ private:
 
     static void PrintInfoLog(GLuint);
 };
+
+DECLARE_LOG_CATEGORY(ShaderCompile, Info, Default);

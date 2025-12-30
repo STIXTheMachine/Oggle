@@ -76,38 +76,32 @@ struct std::formatter<DataBuffer>
 
     auto format(const DataBuffer& Buffer, std::format_context& Ctx) const
     {
-        std::formatter<unsigned int> IntFormatter;
-        std::formatter<std::string_view> StringFormatter;
-        std::format_parse_context Default { "02X" };
-        IntFormatter.parse(Default);
+        auto Out = Ctx.out();
 
-        auto Out = StringFormatter.format("============== Begin Buffer Object ==============\n", Ctx);
+        std::format_to(Out, "{}", "============== Begin Buffer Object ==============\n[");
 
-        *Out++ = '[';
         for (size_t NumBytesWritten = 0; const auto Byte : Buffer)
         {
             const auto ByteInt = std::to_integer<unsigned int>(Byte);
 
-            Out = IntFormatter.format(ByteInt, Ctx);
+            std::format_to(Out, "{:02X}", ByteInt);
             ++NumBytesWritten;
 
             if (NumBytesWritten < Buffer.Size())
             {
                 if (NumBytesWritten % 16 == 0)
                 {
-                    *Out++ = ']';
-                    *Out++ = '\n';
-                    *Out++ = '[';
+                    std::format_to(Out, "{}", "]\n[");
                 }
                 else
                 {
-                    *Out++ = ' ';
+                    std::format_to(Out, "{}", " ");
                 }
             }
         }
 
-        *Out++ = ']';
+        std::format_to(Out, "{}", "]\n=============== End Buffer Object ===============");
 
-        return StringFormatter.format("\n=============== End Buffer Object ===============", Ctx);
+        return Out;
     }
 };

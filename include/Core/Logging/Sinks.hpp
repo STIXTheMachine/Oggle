@@ -21,7 +21,7 @@ concept LogSink = requires(T t, const Message& Msg, bool bForceFlush)
 };
 
 template<typename Derived>
-struct SingleThreadedLogSink
+struct ThreadSafeSinkBase
 {
     void Write(const Message& Msg, bool bForceFlush = false)
     {
@@ -57,28 +57,28 @@ struct SingleThreadedLogSink
 private:
     void WriteImpl_AssumesLocked(const Message& Msg) = delete;
     void FlushImpl_AssumesLocked() = delete;
-    std::mutex  Mutex;
+    std::mutex Mutex;
 };
 
-struct BasicStdOutSink final : SingleThreadedLogSink<BasicStdOutSink>
+struct BasicStdOutSink final : ThreadSafeSinkBase<BasicStdOutSink>
 {
 private:
-    friend struct SingleThreadedLogSink;
+    friend struct ThreadSafeSinkBase;
     void WriteImpl_AssumesLocked(const Message& Msg) { std::cout << Msg; };
     void FlushImpl_AssumesLocked() { std::cout << std::endl; }
 };
 static_assert(LogSink<BasicStdOutSink>);
 
-struct BasicStdErrSink final : SingleThreadedLogSink<BasicStdErrSink>
+struct BasicStdErrSink final : ThreadSafeSinkBase<BasicStdErrSink>
 {
 private:
-    friend struct SingleThreadedLogSink;
+    friend struct ThreadSafeSinkBase;
     void WriteImpl_AssumesLocked(const Message& Msg) { std::cerr << Msg; };
     void FlushImpl_AssumesLocked() { std::cerr << std::endl; }
 };
 static_assert(LogSink<BasicStdErrSink>);
 
-struct BasicFileSink final : SingleThreadedLogSink<BasicFileSink>
+struct BasicFileSink final : ThreadSafeSinkBase<BasicFileSink>
 {
     explicit BasicFileSink(std::string_view BaseFilename)
     {
@@ -117,7 +117,7 @@ struct BasicFileSink final : SingleThreadedLogSink<BasicFileSink>
 
 private:
     std::filesystem::path BaseLogDirectory { "Logs" };
-    friend struct SingleThreadedLogSink;
+    friend struct ThreadSafeSinkBase;
     void WriteImpl_AssumesLocked(const Message& Msg) { File << Msg; }
     void FlushImpl_AssumesLocked() { File.flush(); };
     std::ofstream File;

@@ -2,8 +2,9 @@
 #include <print>
 #include <Renderer/ShaderProgramBuilder.hpp>
 #include <Renderer/LogOpenGL.hpp>
-
 #include "Core/Tuple.hpp"
+
+DEFINE_LOG_CATEGORY(ShaderCompile)
 
 void ShaderSource::Load(const std::filesystem::path& NewSourceFile, GLenum InType)
 {
@@ -16,7 +17,7 @@ void ShaderSource::Load(const std::filesystem::path& NewSourceFile, GLenum InTyp
         return;
     }
 
-    SourceFile = NewSourceFile;
+    SourceFile = FullPath;
     std::ifstream                  FileStream { FullPath };
     const std::istreambuf_iterator It { FileStream };
 
@@ -66,7 +67,7 @@ GLuint ShaderProgramBuilder::Build()
     if (!IsValidConfiguration())
     {
         // TODO: make this more descriptive
-        std::println("WARNING: Attempting to build invalid shader program.");
+        LOG(ShaderCompile, "WARNING: Attempting to build invalid shader program.");
         return 0;
     }
 
@@ -276,7 +277,7 @@ GLuint ShaderProgramBuilder::CompileShader(const ShaderSource& Source)
         if (Source.GetSourceFilePath().has_value())
         {
             auto FullPathString = std::filesystem::canonical(Source.GetSourceFilePath().value()).string();
-            std::println(
+            LOGFMT(ShaderCompile,
                          "In file: {}",
                          FullPathString
                         );
@@ -296,7 +297,7 @@ void ShaderProgramBuilder::PrintInfoLog(GLuint ShaderOrProgram)
         char InfoLog[1024];
         glGetShaderInfoLog(ShaderOrProgram, 1024, nullptr, InfoLog);
 
-        std::println(
+        LOGFMT(ShaderCompile,
                      "=========================================================\n"
                      "ERROR: failed to compile shader!\n"
                      "================ [OpenGL Shader InfoLog] ================\n"
@@ -310,7 +311,7 @@ void ShaderProgramBuilder::PrintInfoLog(GLuint ShaderOrProgram)
         char InfoLog[1024];
         glGetProgramInfoLog(ShaderOrProgram, 1024, nullptr, InfoLog);
 
-        std::println(
+        LOGFMT(ShaderCompile,
                      "==========================================================\n"
                      "ERROR: failed to link program!\n"
                      "================ [OpenGL Program InfoLog] ================\n"

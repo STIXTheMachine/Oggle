@@ -3,45 +3,11 @@
 #include <Renderer/Vertex.hpp>
 #include <Core/ColorPalettes.hpp>
 #include <Renderer/ShaderProgramBuilder.hpp>
-#include <glm/common.hpp>
 #include <Renderer/LogOpenGL.hpp>
+#include <Renderer/DataBuffer.hpp>
+#include <format>
 
 #define BUFFER_OFFSET(Offset) ((void*)(Offset))
-
-const char* VertexShaderSource =
-R"(
-#version 450
-
-layout (location = 0) in vec3 aPos;
-
-void main()
-{
-    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
-}
-)";
-
-const char* FragmentShaderSource =
-R"(
-#version 450
-
-out vec4 FragColor;
-uniform vec4 InColor;
-
-void main()
-{
-    FragColor = InColor;
-}
-)";
-
-const char* ComputeShaderSource =
-R"(
-#version 430
-layout(local_size_x = 1, local_size_y = 1, local_size_z = 1) in;
-void main()
-{
-    // do absolutely nothing
-}
-)";
 
 enum {
     SUCCESS = 0,
@@ -55,6 +21,19 @@ int main()
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return GLFW_INIT_FAILED;
     }
+
+    std::vector<std::byte> Foo {
+        0xDE_b, 0xAD_b, 0xBE_b, 0xEF_b,
+        0x01_b, 0x23_b, 0x45_b, 0x67_b,
+        0x89_b, 0xAB_b, 0xCD_b, 0xEF_b,
+        0x10_b, 0x20_b, 0x30_b, 0x40_b
+    };
+
+    DataBuffer Buf;
+    Buf.AcquireData(Foo);
+
+    LOG(Buf);
+    LOGFMT("Hello, {}", "World!")
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
@@ -109,35 +88,26 @@ int main()
 
     ShaderProgramBuilder Builder;
 
+    std::filesystem::path VertexSourcePath   { "Triangle.vert" };
+    std::filesystem::path FragmentSourcePath { "Triangle.frag" };
+
     const GLuint ShaderProgram =
         Builder
-        .VertexSource(VertexShaderSource)
-        .FragmentSource(FragmentShaderSource)
+        .SetVertexSource(VertexSourcePath)
+        .SetFragmentSource(FragmentSourcePath)
         .Build();
 
-    auto TriangleColor = FloatColor { Palettes::Catppuccin::Mocha::Peach };
+    auto TriangleColor = FloatColor { Palettes::Catppuccin::Mocha::Blue };
     auto InColorLoc = glGetUniformLocation(ShaderProgram, "InColor");
+
     glUseProgram(ShaderProgram);
     glUniform4f(InColorLoc, TriangleColor.R, TriangleColor.G, TriangleColor.B, TriangleColor.A);
 
     auto Background = FloatColor { Palettes::Catppuccin::Mocha::Base };
     glClearColor(Background.R, Background.G, Background.B, Background.A);
 
-    double SwapInterval = 0.5;
-    double SwapTime = glfwGetTime() + SwapInterval;
-
     while (!glfwWindowShouldClose(MainWindow)) {
         glClear(GL_COLOR_BUFFER_BIT);
-
-        if (glfwGetTime() > SwapTime)
-        {
-            SwapTime += SwapInterval;
-
-            GLint BoundVAO {};
-            glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &BoundVAO);
-
-            glBindVertexArray(BoundVAO == 0 ? VAO : 0);
-        }
 
         glDrawArrays(GL_TRIANGLES, 0, 3);
 

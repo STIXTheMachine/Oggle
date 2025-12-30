@@ -23,14 +23,28 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
     // If fatal, log to all sinks and abort
     if (MessageVerbosity == ELogVerbosity::Fatal)
     {
-        // TODO: figure out footguns with this
-        //const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
-        std::string Message;
-        //Message.reserve(FormattedMessageSize);
-        Message.reserve(256); // Placeholder to try and minimize unnecessary allocations until std::formatted_size is figured out
+        const std::string LogHeader = std::format("[{}] ", Category::CategoryName);
 
-        std::format_to(std::back_inserter(Message), "[{}] ", Category::CategoryName);
+        const size_t FormattedMessageSize = std::formatted_size(FormatString, std::forward<FormatArgs>(Args)...) + LogHeader.size();
+
+        std::string Message;
+        Message.reserve(FormattedMessageSize);
+        Message.append(LogHeader);
+
         std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
+
+        const size_t NumNewlines = std::count(Message.begin(), Message.end(), '\n');
+        const size_t NewlineHeadersTotalSize = LogHeader.size() * NumNewlines;
+
+        Message.reserve(FormattedMessageSize + NewlineHeadersTotalSize);
+
+        for (size_t i = 0; i < Message.size(); ++i)
+        {
+            if (Message[i] == '\n')
+            {
+                Message.replace(i, 1, "\n" + LogHeader);
+            }
+        }
 
         GStdOutSink().WriteLn(Message, true);
         GStdErrSink().WriteLn(Message, true);
@@ -46,14 +60,28 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
         return;
     }
 
-    // TODO: figure out footguns with this
-    //const size_t FormattedMessageSize = std::formatted_size(FormatString, Args...) + sizeof(Category::CategoryName) + 3;
-    std::string Message;
-    //Message.reserve(FormattedMessageSize);
-    Message.reserve(256); // Placeholder to try and minimize unnecessary allocations until std::formatted_size is figured out
+    const std::string LogHeader = std::format("[{}] ", Category::CategoryName);
 
-    std::format_to(std::back_inserter(Message), "[{}] ", Category::CategoryName);
+    const size_t FormattedMessageSize = std::formatted_size(FormatString, std::forward<FormatArgs>(Args)...) + LogHeader.size();
+
+    std::string Message;
+    Message.reserve(FormattedMessageSize);
+    Message.append(LogHeader);
+
     std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
+
+    const size_t NumNewlines = std::count(Message.begin(), Message.end(), '\n');
+    const size_t NewlineHeadersTotalSize = LogHeader.size() * NumNewlines;
+
+    Message.reserve(FormattedMessageSize + NewlineHeadersTotalSize);
+
+    for (size_t i = 0; i < Message.size(); ++i)
+    {
+        if (Message[i] == '\n')
+        {
+            Message.replace(i, 1, "\n" + LogHeader);
+        }
+    }
 
     // Dispatch to sinks
     if (HasAnyFlags(Sinks, ELogSinks::StdErr))
