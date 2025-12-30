@@ -46,6 +46,7 @@ struct DataBuffer
     // Stream bytes into buffer.
     // Pair with Reserve() or AddCapacity() to avoid unnecessary reallocations
     DataBuffer& operator<<(std::byte InData);
+    DataBuffer& operator<<(BufferView InData);
 
     size_t Size() const;
     size_t Capacity() const;
@@ -53,9 +54,6 @@ struct DataBuffer
     void AddCapacity(size_t AdditionalCapacity);
 
     void Clear();
-
-    auto begin() const { return Data.begin(); };
-    auto end() const { return Data.end(); };
 
 private:
     BufferType Data;
@@ -71,6 +69,7 @@ struct std::formatter<DataBuffer>
         while (it != Ctx.end() && *it != '}') {
             ++it;
         }
+
         return it;
     }
 
@@ -80,7 +79,7 @@ struct std::formatter<DataBuffer>
 
         std::format_to(Out, "{}", "============== Begin Buffer Object ==============\n[");
 
-        for (size_t NumBytesWritten = 0; const auto Byte : Buffer)
+        for (size_t NumBytesWritten = 0; const auto Byte : Buffer.GetData())
         {
             const auto ByteInt = std::to_integer<unsigned int>(Byte);
 

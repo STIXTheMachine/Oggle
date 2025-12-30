@@ -30,6 +30,18 @@ DataBuffer& DataBuffer::operator<<(const std::byte InData)
     return *this;
 }
 
+DataBuffer& DataBuffer::operator<<(const BufferView InData)
+{
+    AddCapacity(InData.size());
+
+    for (const auto Byte : InData)
+    {
+        *this << Byte;
+    }
+
+    return *this;
+}
+
 size_t DataBuffer::Size() const
 {
     return Data.size();
