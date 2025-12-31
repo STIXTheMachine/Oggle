@@ -74,6 +74,6 @@ private:
 
 using Vertex_P   = TVertex<VertexPosition>;
 using Vertex_PN  = TVertex<VertexPosition, VertexNormal>;
-using Vertex_PC  = TVertex<VertexPosition, VertexColor>;
+using Vertex_PC  = struct { Vec3 Pos; FloatColor Color; };//TVertex<VertexPosition, VertexColor>;
 using Vertex_PNC = TVertex<VertexPosition, VertexNormal, VertexColor>;
 using Vertex_PNT = TVertex<VertexPosition, VertexNormal, VertexTexCoord>;
