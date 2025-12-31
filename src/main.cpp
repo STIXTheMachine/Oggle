@@ -77,7 +77,7 @@ int main()
         DataBuffer MeshData;
     };
 
-    // Mesh
+    // ======== Define/fetch data ========
     const Vertex_P Vertices[]
     {
         {  0.0f,  0.577f, 0.0f }, // Top
@@ -88,25 +88,25 @@ int main()
 
     const GLuint Indices[] { 0, 1, 2, 3 };
 
+    // ========= Create buffers/arrays ========
     GLuint VAO, VBO, EBO;
 
-    // Create buffers/arrays
     glCreateBuffers(1, &VBO);
     glCreateBuffers(1, &EBO);
     glCreateVertexArrays(1, &VAO);
 
-    // Load mesh data
+    // ======== Buffer mesh data ========
     glNamedBufferStorage(VBO, sizeof(Vertices), Vertices, GL_DYNAMIC_STORAGE_BIT);
     glNamedBufferStorage(EBO, sizeof(Indices), Indices, GL_DYNAMIC_STORAGE_BIT);
 
-    // Prepare draw
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    // ======== Attach VBO and configure attribute ========
+    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, Vertex_P::Stride);
 
     glEnableVertexArrayAttrib(VAO, 0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex_P::Stride, BUFFER_OFFSET(0));
+    glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
+    glVertexArrayAttribBinding(VAO, 0, 0);
 
+    glVertexArrayElementBuffer(VAO, EBO);
 
     // Shader
     ShaderProgramBuilder Builder;
@@ -129,11 +129,13 @@ int main()
     glm::mat4 Transform(1.0f);
 
     glClearColor(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, BackgroundColor.A);
-    glUseProgram(ShaderProgram);
     glPointSize(5.f);
 
     while (!glfwWindowShouldClose(MainWindow)) {
         glClear(GL_COLOR_BUFFER_BIT);
+
+        glBindVertexArray(VAO);
+        glUseProgram(ShaderProgram);
 
         Transform = glm::rotate(Transform, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(InTransformLoc, 1, GL_FALSE, glm::value_ptr(Transform));
