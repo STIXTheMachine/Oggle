@@ -1,10 +1,9 @@
 #version 450
 
+layout (location = 0) in vec4 vColor;
 out vec4 FragColor;
-uniform vec4 InColor;
-uniform float InTime;
 
 void main()
 {
-    FragColor = InColor;
+    FragColor = vColor;
 }

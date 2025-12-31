@@ -66,6 +66,7 @@ int main()
 
         void Draw()
         {
+            //glBindVertexArray(VAO);
 
         }
 
@@ -78,12 +79,12 @@ int main()
     };
 
     // ======== Define/fetch data ========
-    const Vertex_P Vertices[]
+    const Vertex_PC Vertices[]
     {
-        {  0.0f,  0.577f, 0.0f }, // Top
-        { -0.5f, -0.289f, 0.0f }, // Left
-        {  0.5f, -0.289f, 0.0f }, // Right
-        {  0.0f,  0.0f,   0.0f } // Origin
+        Vertex_PC { Vec3 {  0.0f,  0.577f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Mauve } }, // Top
+        Vertex_PC { Vec3 { -0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Peach } }, // Left
+        Vertex_PC { Vec3 {  0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Blue } }, // Right
+        Vertex_PC { Vec3 {  0.0f,  0.0f,   0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Red } } // Origin
     };
 
     const GLuint Indices[] { 0, 1, 2, 3 };
@@ -100,11 +101,18 @@ int main()
     glNamedBufferStorage(EBO, sizeof(Indices), Indices, GL_DYNAMIC_STORAGE_BIT);
 
     // ======== Attach VBO and configure attribute ========
-    glVertexArrayVertexBuffer(VAO, 0, VBO, 0, Vertex_P::Stride);
+    glVertexArrayVertexBuffer(VAO, 0, VBO,                      0, sizeof(Vertex_PC));
+    glVertexArrayVertexBuffer(VAO, 1, VBO, sizeof(Vertex_PC::Pos), sizeof(Vertex_PC));
 
+    // Position
     glEnableVertexArrayAttrib(VAO, 0);
     glVertexArrayAttribFormat(VAO, 0, 3, GL_FLOAT, GL_FALSE, 0);
     glVertexArrayAttribBinding(VAO, 0, 0);
+
+    // Color
+    glEnableVertexArrayAttrib(VAO, 1);
+    glVertexArrayAttribFormat(VAO, 1, 4, GL_FLOAT, GL_TRUE, 0);
+    glVertexArrayAttribBinding(VAO, 1, 1);
 
     glVertexArrayElementBuffer(VAO, EBO);
 
@@ -120,11 +128,8 @@ int main()
         .SetFragmentSource(FragmentSourcePath)
         .Build();
 
-    const auto TriangleColor   = FloatColor { Palettes::Catppuccin::Mocha::Sapphire };
-    const auto PointColor      = FloatColor { Palettes::Catppuccin::Mocha::Crust };
-    const auto BackgroundColor = FloatColor { Palettes::Catppuccin::Mocha::Surface2 };
+    const auto BackgroundColor = FloatColor { Palettes::Catppuccin::Mocha::Base };
 
-    const auto InColorLoc = glGetUniformLocation(ShaderProgram, "InColor");
     const auto InTransformLoc = glGetUniformLocation(ShaderProgram, "inTransform");
     glm::mat4 Transform(1.0f);
 
@@ -140,11 +145,7 @@ int main()
         Transform = glm::rotate(Transform, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
         glUniformMatrix4fv(InTransformLoc, 1, GL_FALSE, glm::value_ptr(Transform));
 
-        glUniform4f(InColorLoc, TriangleColor.R, TriangleColor.G, TriangleColor.B, TriangleColor.A);
         glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
-
-        glUniform4f(InColorLoc, PointColor.R, PointColor.G, PointColor.B, PointColor.A);
-        glDrawElements(GL_POINTS, 4, GL_UNSIGNED_INT, nullptr);
 
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
