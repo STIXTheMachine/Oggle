@@ -81,9 +81,9 @@ int main()
     // ======== Define/fetch data ========
     const Vertex_PC Vertices[]
     {
-        Vertex_PC { Vec3 {  0.0f,  0.577f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Mauve } }, // Top
+        Vertex_PC { Vec3 {  0.0f,  0.577f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Flamingo } }, // Top
         Vertex_PC { Vec3 { -0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Peach } }, // Left
-        Vertex_PC { Vec3 {  0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Blue } }, // Right
+        Vertex_PC { Vec3 {  0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Sapphire } }, // Right
         Vertex_PC { Vec3 {  0.0f,  0.0f,   0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Red } } // Origin
     };
 
