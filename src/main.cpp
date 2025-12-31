@@ -54,7 +54,6 @@ int main()
     glCreateVertexArrays(1, &VAO);
     glNamedBufferStorage(VAO, sizeof(Triangle), Triangle, GL_NONE_BIT);
 
-    glCreateVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex_P::Stride, BUFFER_OFFSET(0));
