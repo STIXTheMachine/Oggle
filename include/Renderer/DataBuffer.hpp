@@ -1,4 +1,6 @@
 #pragma once
+#include <Core/OggleType.hpp>
+#include <Core/Array.hpp>
 #include <span>
 #include <vector>
 #include <concepts>
@@ -6,13 +8,13 @@
 #include <ranges>
 
 
-constexpr std::byte operator""_b(const unsigned long long Val)
+constexpr byte operator""_b(const unsigned long long Val)
 {
-    return std::byte { static_cast<unsigned char>(Val) };
+    return byte { static_cast<unsigned char>(Val) };
 }
 
-using BufferType = std::vector<std::byte>;
-using BufferView = std::span<const std::byte>;
+using BufferType = TDynamicArray<byte>;
+using BufferView = std::span<const byte>;
 
 struct DataBuffer
 {
@@ -22,7 +24,7 @@ struct DataBuffer
     explicit DataBuffer(size_t InitialSize);
 
     // Reserves size_t bytes of buffer space and initializes all of them to InitialValue.
-    DataBuffer(size_t, std::byte InitialValue);
+    DataBuffer(size_t, byte InitialValue);
 
     DataBuffer& operator=(const DataBuffer& Other) = default;
     DataBuffer(const DataBuffer& Other) = default;
@@ -46,7 +48,7 @@ struct DataBuffer
 
     // Stream bytes into buffer.
     // Pair with Reserve() or AddCapacity() to avoid unnecessary reallocations
-    DataBuffer& operator<<(std::byte InData);
+    DataBuffer& operator<<(byte InData);
     DataBuffer& operator<<(BufferView InData);
 
     size_t Size() const;
