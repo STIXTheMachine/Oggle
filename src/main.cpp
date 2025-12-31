@@ -44,31 +44,69 @@ int main()
     glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
     glDebugMessageCallback(LogOpenGLError, nullptr);
 
+    struct Mesh
+    {
+        Mesh() = default;
+
+        void CreateBuffers() {
+            glCreateBuffers(1, &VertexBuffer);
+
+            VertexArrays.reserve(NumVertexAttributes);
+            glCreateVertexArrays(NumVertexAttributes, VertexArrays.data());
+
+            ElementArrays.reserve(NumVertexAttributes);
+            glCreateBuffers(NumVertexAttributes, ElementArrays.data());
+        }
+
+        void Init (GLsizei InNumVertexAttributes, BufferView Data)
+        {
+            NumVertexAttributes = InNumVertexAttributes;
+            CreateBuffers();
+        }
+
+        void Draw()
+        {
+
+        }
+
+        GLsizei NumVertexAttributes;
+        GLuint VertexBuffer;
+        GLuint ElementBuffer;
+        TDynamicArray<GLuint> VertexArrays;
+        TDynamicArray<GLuint> ElementArrays;
+        DataBuffer MeshData;
+    };
+
     // Mesh
     const Vertex_P Vertices[]
     {
         {  0.0f,  0.577f, 0.0f }, // Top
         { -0.5f, -0.289f, 0.0f }, // Left
         {  0.5f, -0.289f, 0.0f }, // Right
-        { 0.0f, 0.0f, 0.0f } // Origin
+        {  0.0f,  0.0f,   0.0f } // Origin
     };
 
     const GLuint Indices[] { 0, 1, 2, 3 };
 
     GLuint VAO, VBO, EBO;
 
+    // Create buffers/arrays
     glCreateBuffers(1, &VBO);
-    glNamedBufferStorage(VBO, sizeof(Vertices), Vertices, GL_DYNAMIC_STORAGE_BIT);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
+    glCreateBuffers(1, &EBO);
     glCreateVertexArrays(1, &VAO);
+
+    // Load mesh data
+    glNamedBufferStorage(VBO, sizeof(Vertices), Vertices, GL_DYNAMIC_STORAGE_BIT);
+    glNamedBufferStorage(EBO, sizeof(Indices), Indices, GL_DYNAMIC_STORAGE_BIT);
+
+    // Prepare draw
+    glBindBuffer(GL_ARRAY_BUFFER, VBO);
     glBindVertexArray(VAO);
-    glEnableVertexAttribArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+    glEnableVertexArrayAttrib(VAO, 0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, Vertex_P::Stride, BUFFER_OFFSET(0));
 
-    glCreateBuffers(1, &EBO);
-    glNamedBufferStorage(EBO, sizeof(Indices), Indices, GL_DYNAMIC_STORAGE_BIT);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
     // Shader
     ShaderProgramBuilder Builder;
