@@ -23,7 +23,7 @@ void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLenum Sev
     }();
 
     LOG(OpenGL, Verbosity, "================ [Begin OpenGL Debug Message] ================");
-    LOGFMT(OpenGL, Verbosity, "ID: {}", Id);
+    LOG(OpenGL, Verbosity, FMT("ID: {}", Id));
 
     switch (Source)
     {
@@ -59,6 +59,6 @@ void GLAPIENTRY LogOpenGLError(GLenum Source, GLenum Type, GLuint Id, GLenum Sev
         default:                             LOG(OpenGL, Verbosity, "Severity: INVALID SEVERITY"); break;
     }
 
-    LOGFMT(OpenGL, Verbosity, "{}", Message);
+    LOG(OpenGL, Verbosity, Message);
     LOG(OpenGL, Verbosity, "================= [End OpenGL Debug Message] =================");
 }

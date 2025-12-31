@@ -12,7 +12,7 @@ void ShaderSource::Load(const std::filesystem::path& NewSourceFile, GLenum InTyp
 
     if (!std::filesystem::exists(FullPath))
     {
-        LOGFMT("Failed to load shader source file {}. File does not exist!", FullPath.string())
+        LOG(FMT("Failed to load shader source file {}. File does not exist!", FullPath.string()))
         bHasSource = false;
         return;
     }
@@ -270,24 +270,20 @@ GLuint ShaderProgramBuilder::CompileShader(const ShaderSource& Source)
     GLboolean Success;
     glGetShaderiv(Shader, GL_COMPILE_STATUS, &Success);
 
-    if (!Success)
+    if (Success)
     {
-        PrintInfoLog(Shader);
-
-        if (Source.GetSourceFilePath().has_value())
-        {
-            auto FullPathString = std::filesystem::canonical(Source.GetSourceFilePath().value()).string();
-            LOGFMT(ShaderCompile,
-                         "In file: {}",
-                         FullPathString
-                        );
-        }
-
-        glDeleteShader(Shader);
-        return 0;
+        return Shader;
     }
 
-    return Shader;
+    PrintInfoLog(Shader);
+
+    if (Source.GetSourceFilePath())
+    {
+        auto FullPathString = Source.GetSourceFilePath().value().string();
+        LOG(ShaderCompile, FMT("In file: {}", FullPathString));
+    }
+
+    return 0;
 }
 
 void ShaderProgramBuilder::PrintInfoLog(GLuint ShaderOrProgram)
@@ -297,27 +293,33 @@ void ShaderProgramBuilder::PrintInfoLog(GLuint ShaderOrProgram)
         char InfoLog[1024];
         glGetShaderInfoLog(ShaderOrProgram, 1024, nullptr, InfoLog);
 
-        LOGFMT(ShaderCompile,
-                     "=========================================================\n"
-                     "ERROR: failed to compile shader!\n"
-                     "================ [OpenGL Shader InfoLog] ================\n"
-                     "{}"
-                     "=========================================================\n",
-                     InfoLog
-                    );
+        LOG(
+            ShaderCompile,
+            FMT(
+                "=========================================================\n"
+                "ERROR: failed to compile shader!\n"
+                "================ [OpenGL Shader InfoLog] ================\n"
+                "{}"
+                "=========================================================",
+                InfoLog
+            )
+        );
     }
     else if (glIsProgram(ShaderOrProgram))
     {
         char InfoLog[1024];
         glGetProgramInfoLog(ShaderOrProgram, 1024, nullptr, InfoLog);
 
-        LOGFMT(ShaderCompile,
-                     "==========================================================\n"
-                     "ERROR: failed to link program!\n"
-                     "================ [OpenGL Program InfoLog] ================\n"
-                     "{}"
-                     "==========================================================\n",
-                     InfoLog
-                    );
+        LOG(
+            ShaderCompile,
+            FMT(
+                "==========================================================\n"
+                "ERROR: failed to link program!\n"
+                "================ [OpenGL Program InfoLog] ================\n"
+                "{}"
+                "==========================================================",
+                InfoLog
+            )
+        );
     }
 }

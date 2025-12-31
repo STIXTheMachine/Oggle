@@ -6,6 +6,7 @@
 #include <Renderer/LogOpenGL.hpp>
 #include <Renderer/DataBuffer.hpp>
 #include <format>
+#include <print>
 
 #define BUFFER_OFFSET(Offset) ((void*)(Offset))
 
@@ -33,7 +34,7 @@ int main()
     Buf.AcquireData(Foo);
 
     LOG(Buf);
-    LOGFMT("Hello, {}", "World!")
+    LOG(FMT("Hello, {}", "World!"));
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);

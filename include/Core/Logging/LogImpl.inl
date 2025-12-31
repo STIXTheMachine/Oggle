@@ -17,73 +17,49 @@ concept CLogCategory = requires
     { T::GetLogFileSink() } -> std::same_as<BasicFileSink&>;
 };
 
-template<CLogCategory Category, typename... FormatArgs>
-void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string<FormatArgs...> FormatString, FormatArgs&&... Args)
+
+inline void InsertLogHeaders(std::string_view Header, std::string_view Message, std::string& Output)
 {
-    // If fatal, log to all sinks and abort
-    if (MessageVerbosity == ELogVerbosity::Fatal)
-    {
-        const std::string LogHeader = std::format("[{}] ", Category::CategoryName);
-
-        const size_t FormattedMessageSize = std::formatted_size(FormatString, std::forward<FormatArgs>(Args)...) + LogHeader.size();
-
-        std::string Message;
-        Message.reserve(FormattedMessageSize);
-        Message.append(LogHeader);
-
-        std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
-
-        const size_t NumNewlines = std::count(Message.begin(), Message.end(), '\n');
-        const size_t NewlineHeadersTotalSize = LogHeader.size() * NumNewlines;
-
-        Message.reserve(FormattedMessageSize + NewlineHeadersTotalSize);
-
-        for (size_t i = 0; i < Message.size(); ++i)
-        {
-            if (Message[i] == '\n')
-            {
-                Message.replace(i, 1, "\n" + LogHeader);
-            }
-        }
-
-        GStdOutSink().WriteLn(Message, true);
-        GStdErrSink().WriteLn(Message, true);
-        GLogFileSink().WriteLn(Message, true);
-        Category::GetLogFileSink().WriteLn(Message, true);
-        std::abort();
-        return;
-    }
-
-    // Determine if log message should be emitted
-    if (MessageVerbosity > Category::Verbosity || MessageVerbosity > GMaxLogLevel() || Sinks == ELogSinks::None)
+    if (Message.empty())
     {
         return;
     }
-
-    const std::string LogHeader = std::format("[{}] ", Category::CategoryName);
-
-    const size_t FormattedMessageSize = std::formatted_size(FormatString, std::forward<FormatArgs>(Args)...) + LogHeader.size();
-
-    std::string Message;
-    Message.reserve(FormattedMessageSize);
-    Message.append(LogHeader);
-
-    std::format_to(std::back_inserter(Message), FormatString, std::forward<FormatArgs>(Args)...);
-
-    const size_t NumNewlines = std::count(Message.begin(), Message.end(), '\n');
-    const size_t NewlineHeadersTotalSize = LogHeader.size() * NumNewlines;
-
-    Message.reserve(FormattedMessageSize + NewlineHeadersTotalSize);
-
-    for (size_t i = 0; i < Message.size(); ++i)
+    if (Header.empty())
     {
-        if (Message[i] == '\n')
-        {
-            Message.replace(i, 1, "\n" + LogHeader);
-        }
+        Output = Message;
+        return;
     }
 
-    // Dispatch to sinks
+    // Initial message header
+    std::format_to(std::back_inserter(Output), "{}", Header);
+
+    auto SegmentBegin = Message.begin();
+    for (auto It = Message.begin(); It < Message.end(); ++It)
+    {
+        std::string_view Segment = { SegmentBegin, It };
+
+        if (It + 1 == Message.end())
+        {
+            std::format_to(std::back_inserter(Output), "{}", std::string_view { SegmentBegin, Message.end() });
+            break;
+        }
+
+        if (*It != '\n')
+        {
+            continue;
+        }
+
+        // It points to a newline. Send everything between this newline and the previous one to Output
+        std::format_to(std::back_inserter(Output), "{}", Segment);
+
+        // Point SegmentBegin to the next character, insert the newline and header
+        SegmentBegin = It + 1;
+        std::format_to(std::back_inserter(Output), "\n{}", Header);
+    }
+}
+
+inline void DispatchToSinks(ELogSinks Sinks, BasicFileSink& CategoryFileSink, std::string_view Message)
+{
     if (HasAnyFlags(Sinks, ELogSinks::StdErr))
     {
         GStdErrSink().WriteLn(Message);
@@ -98,8 +74,46 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
     }
     if (HasAnyFlags(Sinks, ELogSinks::OwnFile))
     {
-        Category::GetLogFileSink().WriteLn(Message);
+        CategoryFileSink.WriteLn(Message);
     }
+}
+
+inline bool ShouldLog(ELogVerbosity MessageVerbosity, ELogVerbosity CategoryVerbosity, ELogSinks Sinks)
+{
+    if (MessageVerbosity == ELogVerbosity::Fatal)
+    {
+        return true;
+    }
+
+    if (Sinks == ELogSinks::None || MessageVerbosity > CategoryVerbosity || MessageVerbosity > GMaxLogLevel())
+    {
+        return false;
+    }
+
+    return true;
+}
+
+template<CLogCategory Category>
+void LogImpl(ELogVerbosity Verbosity, ELogSinks Sinks, std::string_view FormattedMessage_NoHeaders)
+{
+    if (!ShouldLog(Verbosity, Category::Verbosity, Sinks))
+    {
+        return;
+    }
+
+    const std::string Header = std::format("[{}] ", Category::CategoryName);
+
+    // One for the beginning of the message plus one for every newline
+    const size_t HeaderCount = 1 + std::count(FormattedMessage_NoHeaders.begin(), FormattedMessage_NoHeaders.end(), '\n');
+    const size_t HeadersTotalSize = Header.size() * HeaderCount;
+    const size_t FullyFormattedMessageSize = FormattedMessage_NoHeaders.size() + HeadersTotalSize;
+
+    std::string FullyFormattedMessage;
+    FullyFormattedMessage.reserve(FullyFormattedMessageSize);
+
+    InsertLogHeaders(Header, FormattedMessage_NoHeaders, FullyFormattedMessage);
+
+    DispatchToSinks(Sinks, Category::GetLogFileSink(), FullyFormattedMessage);
 }
 } // namespace Private
 // Now in namespace Oggle::Logging
@@ -114,52 +128,29 @@ void LogImpl(ELogVerbosity MessageVerbosity, ELogSinks Sinks, std::format_string
 #ifdef OGGLE_NO_LOGGING
 #define LOG(...)
 #define LOGFMT(...)
+#define ARGS(...)
 #else
 
-#define LOGFMT_IMPL(Category, Verbosity, Sinks, FormatString, ...) \
+#define FMT(...) std::format(__VA_ARGS__)
+
+#define LOG_IMPL(Category, Verbosity, Sinks, LogString) \
     { \
         using enum Oggle::Logging::ELogVerbosity; \
         using enum Oggle::Logging::ELogSinks; \
-        Oggle::Logging::Private::LogImpl<Category>(Verbosity, Sinks, FormatString __VA_OPT__(,) __VA_ARGS__); \
-    }
-
-#define DISPATCH_LOGFMT(_1, _2, _3, _4, _5, NUM_ARGS, ...) NUM_ARGS
-
-#define LOGFMT_1(InvalidArg) \
-    static_assert(false, "LOGFMT() requires at least two arguments")
-
-#define LOGFMT_2(FormatString, ...) \
-    LOGFMT_IMPL(LogDefault, LogDefault::DefaultVerbosity, LogDefault::DefaultSinks, FormatString, __VA_ARGS__)
-
-#define LOGFMT_3(Category, FormatString, ...) \
-    LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), LOG_CATEGORY_NAME(Category)::DefaultVerbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, FormatString, __VA_ARGS__)
-
-#define LOGFMT_4(Category, Verbosity, FormatString, ...) \
-    LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, FormatString, __VA_ARGS__)
-
-#define LOGFMT_5(Category, Verbosity, Sinks, FormatString, ...) \
-    LOGFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, Sinks, FormatString, __VA_ARGS__)
-
-#define LOGFMT(...) DISPATCH_LOGFMT(__VA_ARGS__, LOGFMT_5, LOGFMT_4, LOGFMT_3, LOGFMT_2, LOGFMT_1)(__VA_ARGS__)
-
-#define LOGNOFMT_IMPL(Category, Verbosity, Sinks, LogString) \
-    { \
-        using enum Oggle::Logging::ELogVerbosity; \
-        using enum Oggle::Logging::ELogSinks; \
-        Oggle::Logging::Private::LogImpl<Category>(Verbosity, Sinks, "{}", LogString); \
+        Oggle::Logging::Private::LogImpl<Category>(Verbosity, Sinks, LogString); \
     }
 
 #define LOGNOFMT_1(LogString) \
-    LOGNOFMT_IMPL(LogDefault, LogDefault::DefaultVerbosity, LogDefault::DefaultSinks, LogString)
+    LOG_IMPL(LogDefault, LogDefault::DefaultVerbosity, LogDefault::DefaultSinks, std::format("{}", LogString))
 
 #define LOGNOFMT_2(Category, LogString) \
-    LOGNOFMT_IMPL(LOG_CATEGORY_NAME(Category), LOG_CATEGORY_NAME(Category)::DefaultVerbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, LogString)
+    LOG_IMPL(LOG_CATEGORY_NAME(Category), LOG_CATEGORY_NAME(Category)::DefaultVerbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, LogString)
 
 #define LOGNOFMT_3(Category, Verbosity, LogString) \
-    LOGNOFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, LogString)
+    LOG_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, LOG_CATEGORY_NAME(Category)::DefaultSinks, LogString)
 
 #define LOGNOFMT_4(Category, Verbosity, Sinks, LogString) \
-    LOGNOFMT_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, Sinks, LogString)
+    LOG_IMPL(LOG_CATEGORY_NAME(Category), Verbosity, Sinks, LogString)
 
 #define DISPATCH_LOGNOFMT(_1, _2, _3, _4, NUM_ARGS, ...) NUM_ARGS
 
