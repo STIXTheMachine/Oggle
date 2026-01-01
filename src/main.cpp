@@ -9,7 +9,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define BUFFER_OFFSET(Offset) ((void*)(Offset))
+#define offset(Offset) ((void*)(Offset))
+#define countof(x) sizeof((x)) / sizeof((x[0]))
 
 enum {
     SUCCESS = 0,
@@ -81,13 +82,25 @@ int main()
     // ======== Define/fetch data ========
     const Vertex_PC Vertices[]
     {
-        Vertex_PC { Vec3 {  0.0f,  0.577f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Flamingo } }, // Top
-        Vertex_PC { Vec3 { -0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Peach } }, // Left
-        Vertex_PC { Vec3 {  0.5f, -0.289f, 0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Sapphire } }, // Right
-        Vertex_PC { Vec3 {  0.0f,  0.0f,   0.0f }, FloatColor { Palettes::Catppuccin::Mocha::Red } } // Origin
+        Vertex_PC { Vec3 {  0.5f,  0.5,  0.5f }, FloatColor { Palettes::Catppuccin::Latte::Red } },
+        Vertex_PC { Vec3 {  0.5f, -0.5,  0.5f }, FloatColor { Palettes::Catppuccin::Latte::Green } },
+        Vertex_PC { Vec3 { -0.5f,  0.5,  0.5f }, FloatColor { Palettes::Catppuccin::Latte::Blue } },
+        Vertex_PC { Vec3 { -0.5f, -0.5,  0.5f }, FloatColor { Palettes::Catppuccin::Latte::Surface0 } },
+
+        Vertex_PC { Vec3 {  0.5f,  0.5, -0.5f }, FloatColor { Palettes::Catppuccin::Latte::Red } },
+        Vertex_PC { Vec3 {  0.5f, -0.5, -0.5f }, FloatColor { Palettes::Catppuccin::Latte::Green } },
+        Vertex_PC { Vec3 { -0.5f,  0.5, -0.5f }, FloatColor { Palettes::Catppuccin::Latte::Blue } },
+        Vertex_PC { Vec3 { -0.5f, -0.5, -0.5f }, FloatColor { Palettes::Catppuccin::Latte::Surface0 } },
     };
 
-    const GLuint Indices[] { 0, 1, 2, 3 };
+    const GLuint Indices[] {
+        0, 2, 1, 1, 2, 3, // Back
+        4, 5, 6, 5, 7, 6, // Front
+        0, 1, 5, 5, 4, 0,  // Right
+        2, 7, 3, 6, 7, 2,  // Left
+        0, 6, 2, 4, 6, 0,  // Top
+        1, 3, 7, 7, 5, 1,  // Bottom
+    };
 
     // ========= Create buffers/arrays ========
     GLuint VAO, VBO, EBO;
@@ -132,20 +145,39 @@ int main()
 
     const auto InTransformLoc = glGetUniformLocation(ShaderProgram, "inTransform");
     glm::mat4 Transform(1.0f);
+    Transform = glm::translate(Transform, glm::vec3(0.0, 0.0, 0.0));
 
     glClearColor(BackgroundColor.R, BackgroundColor.G, BackgroundColor.B, BackgroundColor.A);
     glPointSize(5.f);
 
+    bool bRotating = true;
+
+    glCullFace(GL_BACK);
+    glEnable(GL_CULL_FACE);
+
     while (!glfwWindowShouldClose(MainWindow)) {
+        // if (glfwGetKey(MainWindow, GLFW_KEY_SPACE) == GLFW_PRESS)
+        // {
+        //     bRotating = false;
+        // }
+        // else
+        // {
+        //     bRotating = true;
+        // }
+
         glClear(GL_COLOR_BUFFER_BIT);
 
         glBindVertexArray(VAO);
         glUseProgram(ShaderProgram);
 
-        Transform = glm::rotate(Transform, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
+        if (bRotating)
+        {
+            Transform = glm::rotate(Transform, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
+        }
+
         glUniformMatrix4fv(InTransformLoc, 1, GL_FALSE, glm::value_ptr(Transform));
 
-        glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, std::size(Indices), GL_UNSIGNED_INT, nullptr);
 
         glfwSwapBuffers(MainWindow);
         glfwPollEvents();
