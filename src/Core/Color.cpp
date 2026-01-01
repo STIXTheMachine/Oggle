@@ -97,6 +97,11 @@ ByteColor::operator FloatColor() const
     };
 }
 
+FloatColor ByteColor::ToFloatColor() const
+{
+    return FloatColor { *this };
+}
+
 ByteColor ByteColor::FromHexRGB(unsigned int HexRGB)
 {
     return FromHexRGBA((HexRGB << 8) | 0xFF);
@@ -138,4 +143,9 @@ FloatColor::operator ByteColor() const
         static_cast<ByteColor::ComponentType>(B * ConversionFactor),
         static_cast<ByteColor::ComponentType>(A * ConversionFactor)
     };
+}
+
+ByteColor FloatColor::ToByteColor() const
+{
+    return ByteColor { *this };
 }

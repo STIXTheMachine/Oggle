@@ -16,6 +16,7 @@ struct ByteColor
     ByteColor(ComponentType R, ComponentType G, ComponentType B);
 
     explicit operator FloatColor() const;
+    FloatColor ToFloatColor() const;
 
     static ByteColor FromHexRGB(unsigned int HexRGB);
     static ByteColor FromHexRGBA(unsigned int HexRGBA);
@@ -59,6 +60,7 @@ struct FloatColor
     static FloatColor FromHexRGBA(unsigned int HexRGBA);
 
     explicit operator ByteColor() const;
+    ByteColor ToByteColor() const;
 
     static const FloatColor White;
     static const FloatColor LightGray;
