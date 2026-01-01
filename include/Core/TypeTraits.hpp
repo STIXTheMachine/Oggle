@@ -70,15 +70,3 @@ struct ValuesAreUnique<First, Rest...> : std::bool_constant<
 /// Variation of TypesAreUnique for non-type template parameters. Requires that all values in the pack be unique.
 template<auto... Ts>
 constexpr bool ValuesAreUnique_v = ValuesAreUnique<Ts...>::value;
-
-// =====================================================================================================================
-// IsVertexAttribute
-// =====================================================================================================================
-template<typename T>
-struct VertexAttribute;
-
-template<typename T>
-struct IsVertexAttribute : std::is_base_of<VertexAttribute<typename T::AttributeType>, T> {};
-
-template<typename... Ts>
-constexpr bool IsVertexAttribute_v = IsVertexAttribute<Ts...>::value;

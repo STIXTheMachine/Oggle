@@ -47,36 +47,10 @@ int main()
 
     struct Mesh
     {
-        Mesh() = default;
-
-        void CreateBuffers() {
-            glCreateBuffers(1, &VertexBuffer);
-
-            VertexArrays.reserve(NumVertexAttributes);
-            glCreateVertexArrays(NumVertexAttributes, VertexArrays.data());
-
-            ElementArrays.reserve(NumVertexAttributes);
-            glCreateBuffers(NumVertexAttributes, ElementArrays.data());
-        }
-
-        void Init (GLsizei InNumVertexAttributes, BufferView Data)
-        {
-            NumVertexAttributes = InNumVertexAttributes;
-            CreateBuffers();
-        }
-
-        void Draw()
-        {
-            //glBindVertexArray(VAO);
-
-        }
-
         GLsizei NumVertexAttributes;
-        GLuint VertexBuffer;
-        GLuint ElementBuffer;
-        TDynamicArray<GLuint> VertexArrays;
-        TDynamicArray<GLuint> ElementArrays;
-        DataBuffer MeshData;
+        GLuint VAO;
+        GLuint VBO;
+        GLuint EBO;
     };
 
     // ======== Define/fetch data ========
@@ -94,8 +68,8 @@ int main()
     };
 
     const GLuint Indices[] {
-        0, 2, 1, 1, 2, 3, // Back
-        4, 5, 6, 5, 7, 6, // Front
+        0, 2, 1, 1, 2, 3,  // Back
+        4, 5, 6, 5, 7, 6,  // Front
         0, 1, 5, 5, 4, 0,  // Right
         2, 7, 3, 6, 7, 2,  // Left
         0, 6, 2, 4, 6, 0,  // Top
@@ -114,8 +88,8 @@ int main()
     glNamedBufferStorage(EBO, sizeof(Indices), Indices, GL_DYNAMIC_STORAGE_BIT);
 
     // ======== Attach VBO and configure attribute ========
-    glVertexArrayVertexBuffer(VAO, 0, VBO,                      0, sizeof(Vertex_PC));
-    glVertexArrayVertexBuffer(VAO, 1, VBO, sizeof(Vertex_PC::Pos), sizeof(Vertex_PC));
+    glVertexArrayVertexBuffer(VAO, 0, VBO,                           0, sizeof(Vertex_PC)); // Position
+    glVertexArrayVertexBuffer(VAO, 1, VBO, sizeof(Vertex_PC::Position), sizeof(Vertex_PC)); // Color
 
     // Position
     glEnableVertexArrayAttrib(VAO, 0);
