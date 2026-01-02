@@ -10,18 +10,15 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Renderer/Camera.hpp"
+
 enum {
     SUCCESS = 0,
     GLFW_INIT_FAILED,
     GLFW_MAIN_WINDOW_CREATION_FAILED,
 };
 
-static struct
-{
-    glm::vec3 Position { 0.f, 3.f, -6.f };
-    glm::quat Orientation {};
-    float FOV { 30.f };
-} Camera;
+static Oggle::Camera Camera { glm::vec3(0.0f, 0.0f, -5.f) };
 
 static struct
 {
@@ -29,6 +26,80 @@ static struct
     int Height = 480;
     std::string_view Name = "Oggle";
 } WindowSettings;
+
+void HandleMouseInput(GLFWwindow* Window, double X, double Y)
+{
+    static double LastX {};
+    static double LastY {};
+    static bool   bNeedsInit = true;
+
+    if (bNeedsInit)
+    {
+        LastX = X;
+        LastY = Y;
+        bNeedsInit = false;
+        return;
+    }
+
+    const double DeltaX = X - LastX;
+    const double DeltaY = Y - LastY;
+    LastX = X;
+    LastY = Y;
+
+    const float Sensitivity = 0.1f;
+
+    Camera.PitchUp(DeltaY * Sensitivity);
+    Camera.YawRight(-DeltaX * Sensitivity);
+}
+
+void HandleKeyInput(GLFWwindow* Window)
+{
+    static float LastFrameTime;
+    static bool  bNeedsInit = true;
+
+    if (bNeedsInit)
+    {
+        LastFrameTime = glfwGetTime();
+        bNeedsInit = false;
+        return;
+    }
+
+    const float CurrentTime = glfwGetTime();
+    const float DeltaTime = CurrentTime - LastFrameTime;
+    LastFrameTime = CurrentTime;
+
+    constexpr float CameraSpeed = 5.f;
+    const float MovementDelta = CameraSpeed * DeltaTime;
+
+    if (glfwGetKey(Window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        Camera.TranslateLocal(glm::vec3(0.f, 0.f, MovementDelta));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        Camera.TranslateLocal(glm::vec3(0.f, 0.f, -MovementDelta));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        Camera.TranslateLocal(glm::vec3(MovementDelta, 0.f, 0.f));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        Camera.TranslateLocal(glm::vec3(-MovementDelta, 0.f, 0.f));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        Camera.Translate(glm::vec3(0.f, MovementDelta, 0.f));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
+        Camera.Translate(glm::vec3(0.f, -MovementDelta, 0.f));
+    }
+    if (glfwGetKey(Window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(Window, true);
+    }
+}
 
 int main()
 {
@@ -50,6 +121,10 @@ int main()
     }
 
     glfwMakeContextCurrent(MainWindow);
+
+    glfwSetInputMode(MainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(MainWindow, HandleMouseInput);
+    //glfwSetKeyCallback(MainWindow, HandleKeyInput);
 
     glbinding::initialize(glfwGetProcAddress);
 
@@ -100,8 +175,7 @@ int main()
     const auto BackgroundColor = FloatColor { Palettes::Catppuccin::Mocha::Base };
 
     const auto InTransformLoc = glGetUniformLocation(ShaderProgram, "InMVP");
-    glm::mat4 View = glm::lookAt(Camera.Position, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-    glm::mat4 Projection = glm::perspectiveFov(glm::radians(Camera.FOV), (float)WindowSettings.Width, (float)WindowSettings.Height, 0.1f, 100.0f);
+    glm::mat4 Projection = glm::perspectiveFov(glm::radians(Camera.VerticalFOV), (float)WindowSettings.Width, (float)WindowSettings.Height, 0.1f, 100.0f);
     glm::mat4 Model(1.0f);
     Model = glm::translate(Model, glm::vec3(0.0, 0.0, -1));
 
@@ -114,12 +188,13 @@ int main()
     glEnable(GL_DEPTH_TEST);
 
     while (!glfwWindowShouldClose(MainWindow)) {
+        HandleKeyInput(MainWindow);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(ShaderProgram);
 
-        Model = glm::rotate(Model, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
-        glUniformMatrix4fv(InTransformLoc, 1, GL_FALSE, glm::value_ptr(Projection * View * Model));
+        //Model = glm::rotate(Model, 0.0250f, glm::vec3(1.0f, 1.0f, 1.0f));
+        glUniformMatrix4fv(InTransformLoc, 1, GL_FALSE, glm::value_ptr(Projection * Camera.GetViewMatrix() * Model));
 
         Cube.Draw();
 
