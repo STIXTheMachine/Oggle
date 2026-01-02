@@ -56,7 +56,7 @@ include(FetchContent)
 FetchContent_Declare(
         glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git
-        GIT_TAG 	   0af55ccecd98d4e5a8d1fad7de25ba429d60e863 # 1.0.1
+        GIT_TAG 	   8d1fd52e5ab5590e2c81768ace50c72bae28f2ed # 1.0.3
 )
 FetchContent_MakeAvailable(glm)
 
