@@ -15,6 +15,7 @@ file(
 add_executable(
     ${TARGET}
     ${SOURCES}
+    ThirdParty/Vendor/stb/src/stb_image.cpp
 )
 
 # Make MSVC behave itself. The fact that the standard compliant preprocessor isn't the default is fucking wild.
