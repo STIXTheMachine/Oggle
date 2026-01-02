@@ -49,6 +49,7 @@ set(GLBINDING_DIR "ThirdParty/Vendor/glbinding-3.5.0")
 add_subdirectory(${GLBINDING_DIR})
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Vendor/glbinding-3.5.0/source/glbinding/include")
 target_include_directories(${TARGET} PRIVATE "ThirdParty/Vendor/glbinding-3.5.0/source/glbinding-aux/include")
+target_include_directories(${TARGET} PRIVATE "ThirdParty/Vendor/stb/include")
 
 include(FetchContent)
 
