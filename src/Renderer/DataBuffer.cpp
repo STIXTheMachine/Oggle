@@ -1,6 +1,8 @@
 #include "Renderer/DataBuffer.hpp"
 #include <utility>
 
+DataBuffer DataBuffer::Empty {};
+
 DataBuffer::DataBuffer(size_t InitialSize)
     : Data(InitialSize)
 {}

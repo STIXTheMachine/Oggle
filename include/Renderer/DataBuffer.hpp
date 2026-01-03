@@ -58,6 +58,7 @@ struct DataBuffer
 
     void Clear();
 
+    static DataBuffer Empty;
 private:
     BufferType Data;
 };
