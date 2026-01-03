@@ -9,7 +9,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <Renderer/BitmapLoader.hpp>
 #include "Renderer/Camera.hpp"
 
 enum {
@@ -103,6 +103,9 @@ void HandleKeyInput(GLFWwindow* Window)
 
 int main()
 {
+    Oggle::BitmapLoader Loader;
+    Loader.Load("Assets/Textures/Grumbus.bmp");
+
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return GLFW_INIT_FAILED;
