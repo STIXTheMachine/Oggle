@@ -10,6 +10,4 @@ add_executable(
     ${SOURCES}
 )
 
-target_link_libraries(Scratch PRIVATE Oggle::Renderer)
-target_link_libraries(Scratch PRIVATE Oggle::Windowing)
-target_link_libraries(Scratch PRIVATE Oggle::Core)
+target_link_libraries(Scratch PRIVATE Oggle::Application)

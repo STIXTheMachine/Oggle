@@ -1,7 +1,9 @@
-#include <cmath>
-#include "CoreMinimal.hpp"
-#include "Windowing/Test.hpp"
+#include "Application/Application.hpp"
+#include "Windowing/SpawnTestWindow.hpp"
 
 int main()
 {
+    SpawnGlfwWindow();
+    //SpawnImguiDemoWindow();
+    //Oggle::Application App;
 }
