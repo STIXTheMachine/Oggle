@@ -17,5 +17,6 @@ target_include_directories(
 )
 
 target_link_libraries(${MODULE} PUBLIC Oggle::Core)
+target_link_libraries(${MODULE} PRIVATE glbinding::glbinding)
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
