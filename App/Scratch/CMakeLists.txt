@@ -9,4 +9,7 @@ add_executable(
     Scratch
     ${SOURCES}
 )
-target_link_libraries(Scratch PRIVATE Oggle::Window)
+
+target_link_libraries(Scratch PRIVATE Oggle::Renderer)
+target_link_libraries(Scratch PRIVATE Oggle::Windowing)
+target_link_libraries(Scratch PRIVATE Oggle::Core)

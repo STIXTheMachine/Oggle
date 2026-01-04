@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-set(MODULE Core)
+set(MODULE Renderer)
 
 file(
         GLOB_RECURSE
@@ -15,5 +15,7 @@ target_include_directories(
         PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
+
+target_link_libraries(${MODULE} PUBLIC Oggle::Core)
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
