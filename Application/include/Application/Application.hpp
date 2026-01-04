@@ -1,15 +1,17 @@
-//
-// Created by jake on 1/4/26.
-//
-
 #pragma once
+#include <memory>
+#include "Windowing/Window.hpp"
 
 namespace Oggle
 {
 struct Application
 {
     Application();
-private:
 
+    void Run();
+
+    ~Application();
+private:
+    std::unique_ptr<Window> MainWindow;
 };
 } // Oggle

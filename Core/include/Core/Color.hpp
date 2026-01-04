@@ -8,10 +8,14 @@ struct FloatColor;
 
 namespace ColorSpaceConversions
 {
-    extern float sRGBToLinearTable[256];
+    extern const float sRGBToLinearTable[256];
+    extern const uint8 LinearTosRGBTable[4096];
 
-    float sRGBByteToLinearFloat(uint8);
-    uint8 LinearFloatTosRGBByte(float);
+    float sRGBByteToLinearFloatFast(uint8);
+    float sRGBByteToLinearFloatSlow(uint8);
+
+    uint8 LinearFloatTosRGBByteFast(float);
+    uint8 LinearFloatTosRGBByteSlow(float);
 }
 
 /// Stores color information in 4 bytes for R, G, B, A. Byte order is 0xRRGGBBAA.
