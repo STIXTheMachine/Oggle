@@ -15,16 +15,13 @@ void Application::Init(const ApplicationInitInfo& AppInfo)
     };
 
     WindowingModule::Init();
-
     CreateMainWindow(WindowInfo);
     MainWindow->MakeContextCurrent();
-
     RenderingModule::Init();
 
     RendererCreateInfo RendererInfo {
 
     };
-
 
     CreateRenderer(RendererInfo);
 }

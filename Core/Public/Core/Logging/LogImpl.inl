@@ -1,7 +1,6 @@
 #pragma once
 
 #include <format>
-#include "Core/Assert.hpp"
 
 namespace Private // Oggle::Logging::Private
 {

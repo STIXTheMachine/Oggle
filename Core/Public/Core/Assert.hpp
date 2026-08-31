@@ -1,5 +1,6 @@
 #pragma once
-#include "Core/Logging/Logging.hpp"
+#include <Core/Logging/Logging.hpp>
+DECLARE_LOG_CATEGORY(Assert, Fatal, Default);
 
 namespace Oggle::Private
 {
@@ -7,11 +8,10 @@ namespace Oggle::Private
     {
         if (!Condition)
         {
-            //LOG(Assert, Message);
-            std::abort();
+            LOG(Assert, Message);
         }
     };
 }
 
 #define OGGLE_ASSERT(Condition) { Oggle::Private::AssertImpl(!!Condition); }
-//#define OGGLE_ASSERTF(Condition, Message) { Oggle::Private::AssertImpl(!!Condition, Message); }
+#define OGGLE_ASSERT_MSG(Condition, Message) { Oggle::Private::AssertImpl(!!Condition, Message); }

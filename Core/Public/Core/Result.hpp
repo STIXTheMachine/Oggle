@@ -283,35 +283,35 @@ namespace Oggle
     template <typename Value, typename Error>
     Error& Result<Value, Error>::GetError()
     {
-        OGGLE_ASSERT(IsError());
+        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false.");
         return Memory.InternalError;
     }
 
     template <typename Value, typename Error>
     const Error& Result<Value, Error>::GetError() const
     {
-        OGGLE_ASSERT(IsError());
+        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false.");
         return Memory.InternalError;
     }
 
     template <typename Value, typename Error>
     Value& Result<Value, Error>::GetValue()
     {
-        OGGLE_ASSERT(IsValid());
+        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false.");
         return Memory.InternalValue;
     }
 
     template <typename Value, typename Error>
     const Value& Result<Value, Error>::GetValue() const
     {
-        OGGLE_ASSERT(IsValid());
+        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false.");
         return Memory.InternalValue;
     }
 
     template <typename Value, typename Error>
     Value Result<Value, Error>::MoveValue()
     {
-        OGGLE_ASSERT(IsValid());
+        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::MoveValue() when IsValid() is false.");
         auto Out = std::move(Memory.InternalValue);
         Clear();
         return Out;
@@ -320,7 +320,7 @@ namespace Oggle
     template <typename Value, typename Error>
     Error Result<Value, Error>::MoveError()
     {
-        OGGLE_ASSERT(IsError());
+        OGGLE_ASSERT_MSG(IsError(), "Call to Result::MoveError() when IsError() is false.");
         auto Out = std::move(Memory.InternalError);
         Clear();
         return Out;
