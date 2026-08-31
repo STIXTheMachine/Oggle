@@ -1,6 +1,7 @@
 #pragma once
-#include "../Utilities/Assert.hpp"
-#include "CoreMinimal.hpp"
+#include "Core/Utilities/Assert.hpp"
+#include "Core/Utilities/MemoryUtils.hpp"
+#include <string>
 
 namespace Oggle
 {
@@ -283,35 +284,35 @@ namespace Oggle
     template <typename Value, typename Error>
     Error& Result<Value, Error>::GetError()
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false.");
+        OGGLE_ASSERT(IsError());
         return Memory.InternalError;
     }
 
     template <typename Value, typename Error>
     const Error& Result<Value, Error>::GetError() const
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false.");
+        OGGLE_ASSERT(IsError());
         return Memory.InternalError;
     }
 
     template <typename Value, typename Error>
     Value& Result<Value, Error>::GetValue()
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false.");
+        OGGLE_ASSERT(IsValid());
         return Memory.InternalValue;
     }
 
     template <typename Value, typename Error>
     const Value& Result<Value, Error>::GetValue() const
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false.");
+        OGGLE_ASSERT(IsValid());
         return Memory.InternalValue;
     }
 
     template <typename Value, typename Error>
     Value Result<Value, Error>::MoveValue()
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::MoveValue() when IsValid() is false.");
+        OGGLE_ASSERT(IsValid());
         auto Out = std::move(Memory.InternalValue);
         Clear();
         return Out;
@@ -320,7 +321,7 @@ namespace Oggle
     template <typename Value, typename Error>
     Error Result<Value, Error>::MoveError()
     {
-        OGGLE_ASSERT_MSG(IsError(), "Call to Result::MoveError() when IsError() is false.");
+        OGGLE_ASSERT(IsError());
         auto Out = std::move(Memory.InternalError);
         Clear();
         return Out;

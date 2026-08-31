@@ -7,6 +7,7 @@ add_library(${MODULE}
         Private/Math/Color.cpp
         Private/Math/ColorConversionTables.cpp
         Private/Utilities/Assert.cpp
+        Public/Core/Utilities/MemoryUtils.hpp
 )
 
 target_include_directories(
