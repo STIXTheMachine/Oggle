@@ -4,9 +4,9 @@ set(MODULE Core)
 add_library(${MODULE}
         Private/Logging/LoggingGlobals.cpp
         Private/ModuleInterface.cpp
-        Private/Color.cpp
-        Private/ColorConversionTables.cpp
-        Private/Assert.cpp
+        Private/Math/Color.cpp
+        Private/Math/ColorConversionTables.cpp
+        Private/Utilities/Assert.cpp
 )
 
 target_include_directories(

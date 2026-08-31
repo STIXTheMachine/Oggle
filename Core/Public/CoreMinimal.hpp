@@ -1,7 +1,7 @@
 #pragma once
-#include "Core/Assert.hpp"
-#include "Core/Color.hpp"
+#include "Core/Utilities/Assert.hpp"
+#include "Core/Math/Color.hpp"
 #include "Core/Logging/Logging.hpp"
-#include "Core/OggleType.hpp"
-#include "Core/Result.hpp"
-#include "Core/SmartPointer.hpp"
+#include "Core/Vocabulary/OggleType.hpp"
+#include "Core/Vocabulary/Result.hpp"
+#include "Core/Vocabulary/SmartPointer.hpp"

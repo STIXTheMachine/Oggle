@@ -1,5 +1,5 @@
 #pragma once
-#include "Assert.hpp"
+#include "../Utilities/Assert.hpp"
 #include "CoreMinimal.hpp"
 
 namespace Oggle

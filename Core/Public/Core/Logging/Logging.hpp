@@ -1,6 +1,6 @@
 #pragma once
-#include <Core/Bitflags.hpp>
-#include <Core/OggleType.hpp>
+#include <../Utilities/Bitflags.hpp>
+#include <../Vocabulary/OggleType.hpp>
 #include <Core/Logging/Sinks.hpp>
 
 /// Thread-safe logging system with configurable verbosity levels and output destinations.

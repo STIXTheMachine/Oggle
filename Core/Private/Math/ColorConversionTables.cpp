@@ -1,4 +1,4 @@
-#include "Core/Color.hpp"
+#include "Core/Math/Color.hpp"
 
 namespace Oggle::ColorSpaceConversions
 {
