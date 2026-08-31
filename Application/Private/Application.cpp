@@ -1,8 +1,8 @@
 #include "Application/Application.hpp"
-
 #include "LogApplication.hpp"
 #include "RenderingModule.hpp"
 #include "WindowingModule.hpp"
+#include "Renderer/Renderer.hpp"
 #include "glad/gl.h" // TODO: figure out why I can include this here
 #include "GLFW/glfw3.h"
 
@@ -19,16 +19,14 @@ void Application::Init(const ApplicationInitInfo& AppInfo)
     CreateMainWindow(WindowInfo);
     MainWindow->MakeContextCurrent();
 
-    const int Version = gladLoadGL(glfwGetProcAddress);
+    RenderingModule::Init();
 
-    // RendererCreateInfo RendererInfo {
-    //
-    // };
-    //
-    // CreateRenderer(RendererInfo);
-    //
-    // RenderingModule::Init();
+    RendererCreateInfo RendererInfo {
 
+    };
+
+
+    CreateRenderer(RendererInfo);
 }
 
 void Application::Run()
@@ -76,7 +74,7 @@ void Application::Run()
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-        "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+        "FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f)\n"
     "}\n";
 
     uint32 VertexShader   = glCreateShader(GL_VERTEX_SHADER);
@@ -94,7 +92,7 @@ void Application::Run()
     {
         char InfoLog[512];
         glGetShaderInfoLog(VertexShader, 512, nullptr, InfoLog);
-        LOG(Application, FMT("Failed to compile vertex shader: {}", InfoLog));
+        LOG(Application, FMT("Failed to compile vertex shader:\n{}", InfoLog));
     }
 
     glCompileShader(FragmentShader);
@@ -103,7 +101,7 @@ void Application::Run()
     {
         char InfoLog[512];
         glGetShaderInfoLog(FragmentShader, 512, nullptr, InfoLog);
-        LOG(Application, FMT("Failed to compile fragment shader: {}", InfoLog));
+        LOG(Application, FMT("Failed to compile fragment shader:\n{}", InfoLog));
     }
 
     glAttachShader(ShaderProgram, VertexShader);
@@ -115,7 +113,7 @@ void Application::Run()
     {
         char InfoLog[512];
         glGetProgramInfoLog(ShaderProgram, 512, nullptr, InfoLog);
-        LOG(Application, FMT("Failed to link shader program: {}", InfoLog));
+        LOG(Application, FMT("Failed to link shader program:\n{}", InfoLog));
     }
 
     glDeleteShader(VertexShader);
@@ -140,22 +138,25 @@ void Application::Shutdown()
     WindowingModule::Shutdown();
 }
 
-
 void Application::CreateMainWindow(WindowCreateInfo& WindowInfo)
 {
-    auto Result = Window::Create(WindowInfo);
-    if (!Result)
+    auto WindowCreateResult = Window::Create(WindowInfo);
+    if (!WindowCreateResult)
     {
         LOG(Application, Fatal, "MainWindow creation failed");
     }
 
-    MainWindow = Result.MoveValue();
+    MainWindow = WindowCreateResult.MoveValue();
 }
 
 void Application::CreateRenderer(RendererCreateInfo& RendererInfo)
 {
-    auto Result = Renderer::Create(RendererInfo);
+    auto RendererCreateResult = Renderer::Create(RendererInfo);
+    if (!RendererCreateResult)
+    {
+        //LOG(Application, Fatal, "Renderer creation failed")
+    }
 
-    LOG(Application, Fatal, "Renderer creation failed")
+    Renderer = RendererCreateResult.MoveValue();
 }
 } // Oggle

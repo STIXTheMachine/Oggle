@@ -21,5 +21,6 @@ private:
     void CreateRenderer(RendererCreateInfo& RendererInfo);
 
     WindowHandle MainWindow;
+    Unique<Renderer> Renderer;
 };
 } // Oggle

@@ -6,6 +6,7 @@ add_library(${MODULE}
         Private/ModuleInterface.cpp
         Private/Color.cpp
         Private/ColorConversionTables.cpp
+        Private/Assert.cpp
 )
 
 target_include_directories(

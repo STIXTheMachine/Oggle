@@ -125,7 +125,7 @@ void LogImpl(ELogVerbosity Verbosity, ELogSinks Sinks, std::string_view Formatte
         GLogFileSink().Flush();
         Category::GetLogFileSink().Flush();
 
-        OGGLE_ASSERT(false);
+        std::abort();
     }
 }
 } // namespace Private
