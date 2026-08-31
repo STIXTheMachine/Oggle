@@ -1,19 +1,23 @@
 cmake_minimum_required(VERSION 3.15)
 set(MODULE Core)
 
-file(
-        GLOB_RECURSE
-        SOURCES
-        CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+add_library(${MODULE}
+        Private/Logging/LoggingGlobals.cpp
+        Private/ModuleInterface.cpp
+        Private/Color.cpp
+        Private/ColorConversionTables.cpp
 )
-
-add_library(${MODULE} STATIC ${SOURCES})
 
 target_include_directories(
         ${MODULE}
         PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Public"
+)
+
+target_compile_definitions(
+        Core PUBLIC
+        $<$<CONFIG:Debug>:OGGLE_DEBUG>
+        OGGLE_DEBUG_ENABLED=$<IF:$<CONFIG:Debug>,1,0>
 )
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})

@@ -1,6 +1,9 @@
-#include <iostream>
+#include "Application/Application.hpp"
 
 int main()
 {
-    std::cout << "Hello, World!" << std::endl;
+    Oggle::Application App;
+    App.Init();
+    App.Run();
+    App.Shutdown();
 }

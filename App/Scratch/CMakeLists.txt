@@ -1,3 +1,5 @@
+set(APPNAME Scratch)
+
 file(
     GLOB_RECURSE
     SOURCES
@@ -6,8 +8,8 @@ file(
 )
 
 add_executable(
-    Scratch
+    ${APPNAME}
     ${SOURCES}
 )
 
-target_link_libraries(Scratch PRIVATE Oggle::Application)
+target_link_libraries(${APPNAME} PRIVATE Oggle::Application)

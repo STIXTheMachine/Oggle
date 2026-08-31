@@ -1,5 +1,5 @@
 #include "CoreMinimal.hpp"
-#include "Application/Application.hpp"
+#include "../../../Application/Public/Application/Application.hpp"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include "glbinding/gl/gl.h"

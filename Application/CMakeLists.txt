@@ -5,21 +5,21 @@ file(
         GLOB_RECURSE
         SOURCES
         CONFIGURE_DEPENDS
-        "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Private/*.cpp"
 )
 
-add_library(${MODULE} STATIC ${SOURCES})
+add_library(${MODULE} STATIC ${SOURCES}
+        Private/LogApplication.cpp
+)
 
 target_include_directories(
         ${MODULE}
         PUBLIC
-        "${CMAKE_CURRENT_SOURCE_DIR}/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/Public"
 )
 
 target_link_libraries(${MODULE} PUBLIC Oggle::Core)
 target_link_libraries(${MODULE} PUBLIC Oggle::Windowing)
 target_link_libraries(${MODULE} PRIVATE Oggle::Renderer)
-target_link_libraries(${MODULE} PRIVATE glfw)
-target_link_libraries(${MODULE} PRIVATE glbinding::glbinding)
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
