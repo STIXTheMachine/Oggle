@@ -1,6 +1,6 @@
-#include<iostream>
+extern void Foo();
 
 int main()
 {
-    std::cout << "Hello, TestSuite!";
+    Foo();
 }

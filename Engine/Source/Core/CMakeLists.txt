@@ -23,3 +23,7 @@ target_compile_definitions(
 )
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
+
+#if(OGGLE_BUILD_TESTS)
+    add_subdirectory(Tests)
+#endif()

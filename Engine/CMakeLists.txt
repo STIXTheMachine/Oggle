@@ -23,10 +23,8 @@ if(OGGLE_USE_D3D12)
     message(FATAL_ERROR "Oggle does not yet support D3D12.")
 endif()
 
-set(CMAKE_CXX_STANDARD 23)
 
 set(TARGET ${PROJECT_NAME})
-set(OGGLE_THIRD_PARTY_DIR ${CMAKE_SOURCE_DIR}/ThirdParty)
 
 # Framework Modules
 add_subdirectory(Source/Core)
@@ -35,8 +33,7 @@ add_subdirectory(Source/Renderer)
 add_subdirectory(Source/Application)
 
 # Applications
-add_library(Oggle INTERFACE
-        ../TestSuite/Source/Private/main.cpp)
+add_library(Oggle INTERFACE)
 
 target_link_libraries(Oggle INTERFACE Oggle::Core)
 target_link_libraries(Oggle INTERFACE Oggle::Windowing)
