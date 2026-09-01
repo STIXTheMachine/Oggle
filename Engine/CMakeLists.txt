@@ -31,6 +31,7 @@ add_subdirectory(Source/Core)
 add_subdirectory(Source/Windowing)
 add_subdirectory(Source/Renderer)
 add_subdirectory(Source/Application)
+add_subdirectory(Source/Testing)
 
 # Applications
 add_library(Oggle INTERFACE)

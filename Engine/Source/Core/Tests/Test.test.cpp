@@ -2,5 +2,5 @@
 
 void Foo()
 {
-    std::cout << "Hello, Foo!";
+    std::cout << "Hello from Test.test.cpp!";
 }

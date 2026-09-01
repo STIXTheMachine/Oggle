@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 set(MODULE Core)
 
+add_subdirectory(Tests)
+
 add_library(${MODULE}
         Private/Logging/LoggingGlobals.cpp
         Private/ModuleInterface.cpp
@@ -23,7 +25,3 @@ target_compile_definitions(
 )
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
-
-#if(OGGLE_BUILD_TESTS)
-    add_subdirectory(Tests)
-#endif()
