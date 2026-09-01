@@ -1,6 +1,6 @@
-extern void Foo();
+extern void ResultTest();
 
 int main()
 {
-    Foo();
+    ResultTest();
 }
