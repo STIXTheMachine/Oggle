@@ -35,7 +35,8 @@ add_subdirectory(Source/Renderer)
 add_subdirectory(Source/Application)
 
 # Applications
-add_library(Oggle INTERFACE)
+add_library(Oggle INTERFACE
+        ../TestSuite/Source/Private/main.cpp)
 
 target_link_libraries(Oggle INTERFACE Oggle::Core)
 target_link_libraries(Oggle INTERFACE Oggle::Windowing)
