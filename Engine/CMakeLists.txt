@@ -23,7 +23,6 @@ if(OGGLE_USE_D3D12)
     message(FATAL_ERROR "Oggle does not yet support D3D12.")
 endif()
 
-
 set(TARGET ${PROJECT_NAME})
 
 # Framework Modules
@@ -33,9 +32,8 @@ add_subdirectory(Source/Renderer)
 add_subdirectory(Source/Application)
 add_subdirectory(Source/Testing)
 
-# Applications
+# A monolithic "ALL THE THINGS" target for if you want it
 add_library(Oggle INTERFACE)
-
 target_link_libraries(Oggle INTERFACE Oggle::Core)
 target_link_libraries(Oggle INTERFACE Oggle::Windowing)
 target_link_libraries(Oggle INTERFACE Oggle::Application)
