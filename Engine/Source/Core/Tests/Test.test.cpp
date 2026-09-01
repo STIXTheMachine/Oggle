@@ -1,6 +1,8 @@
-#include <iostream>
+#include "TestingMinimal.hpp"
 
-void Foo()
+int one() { return 1; }
+
+TEST_CASE("doctest test")
 {
-    std::cout << "Hello from Test.test.cpp!";
+    CHECK(one() == 1);
 }

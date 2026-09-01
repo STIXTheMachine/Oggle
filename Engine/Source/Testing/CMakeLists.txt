@@ -3,6 +3,7 @@ set(MODULE Testing)
 
 add_subdirectory(ThirdParty/doctest-2.5.3)
 add_library(${MODULE} INTERFACE)
+target_include_directories(${MODULE} INTERFACE Public)
 target_link_libraries(${MODULE} INTERFACE doctest)
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
