@@ -14,10 +14,8 @@ static std::string CleanCallstack(std::stacktrace& Stack)
     return CallStack.str();
 }
 
-void Oggle::Assert::Private::AssertImpl(bool Condition, AssertInfo& InInfo)
+void Oggle::Assert::Private::AssertImpl(AssertInfo& InInfo)
 {
-    if (Condition) return;
-
     std::string ErrorMessage;
 
     if (InInfo.Message.empty())
@@ -46,10 +44,8 @@ void Oggle::Assert::Private::AssertImpl(bool Condition, AssertInfo& InInfo)
     std::abort();
 }
 
-void Oggle::Assert::Private::EnsureImpl(bool Condition, AssertInfo& InInfo)
+void Oggle::Assert::Private::EnsureImpl(AssertInfo& InInfo)
 {
-    if (Condition) return;
-
     std::string ErrorMessage;
 
     if (InInfo.Message.empty())

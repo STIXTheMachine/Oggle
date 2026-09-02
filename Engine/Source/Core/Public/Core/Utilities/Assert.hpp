@@ -14,15 +14,15 @@ namespace Oggle::Assert::Private
         std::stacktrace      Stacktrace = std::stacktrace::current();
     };
 
-    [[noreturn]] void AssertImpl(bool Condition, AssertInfo& Info);
+    [[noreturn]] void AssertImpl(AssertInfo& Info);
 
-    void EnsureImpl(bool Condition, AssertInfo& Info);
+    void EnsureImpl(AssertInfo& Info);
 }
 
-#define OGGLE_ASSERT(Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::AssertImpl(!!Condition, Info); }
-#define OGGLE_ASSERT_MSG(Condition, InMessage) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::AssertImpl(!!Condition, Info); }
-#define OGGLE_ENSURE(Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::EnsureImpl(!!Condition, Info); }
-#define OGGLE_ENSURE_MSG(Condition, InMessage) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::EnsureImpl(!!Condition, Info); }
+#define OGGLE_ASSERT(Condition) { if (!Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::AssertImpl(Info); } }
+#define OGGLE_ASSERT_MSG(Condition, InMessage) { if(!Condition) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::AssertImpl(Info); } }
+#define OGGLE_ENSURE(Condition) { if (!Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::EnsureImpl(Info); } }
+#define OGGLE_ENSURE_MSG(Condition, InMessage) { if(!Condition) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::EnsureImpl(Info); } }
 #else
 #define OGGLE_ASSERT(Condition)
 #define OGGLE_ASSERT_MSG(Condition, Message)
