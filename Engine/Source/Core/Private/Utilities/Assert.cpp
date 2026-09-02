@@ -14,29 +14,29 @@ static std::string CleanCallstack(std::stacktrace& Stack)
     return CallStack.str();
 }
 
-void Oggle::Assert::Private::AssertImpl(AssertInfo& InInfo)
+void Oggle::Assert::Private::AssertImpl(AssertInfo& Info)
 {
     std::string ErrorMessage;
 
-    if (InInfo.Message.empty())
+    if (Info.Message.empty())
     {
         ErrorMessage = std::format(
             "Assert failed at {}:{}:{}\nCallstack:\n{}",
-            InInfo.Location.file_name(),
-            InInfo.Location.line(),
-            InInfo.Location.column(),
-            CleanCallstack(InInfo.Stacktrace)
+            Info.Location.file_name(),
+            Info.Location.line(),
+            Info.Location.column(),
+            CleanCallstack(Info.Stacktrace)
         );
     }
     else
     {
         ErrorMessage = std::format(
             "Assert '{}' failed at {}:{}:{}\nCallstack:\n{}",
-            InInfo.Message,
-            InInfo.Location.file_name(),
-            InInfo.Location.line(),
-            InInfo.Location.column(),
-            CleanCallstack(InInfo.Stacktrace)
+            Info.Message,
+            Info.Location.file_name(),
+            Info.Location.line(),
+            Info.Location.column(),
+            CleanCallstack(Info.Stacktrace)
         );
     }
 
@@ -44,29 +44,29 @@ void Oggle::Assert::Private::AssertImpl(AssertInfo& InInfo)
     std::abort();
 }
 
-void Oggle::Assert::Private::EnsureImpl(AssertInfo& InInfo)
+void Oggle::Assert::Private::EnsureImpl(AssertInfo& Info)
 {
     std::string ErrorMessage;
 
-    if (InInfo.Message.empty())
+    if (Info.Message.empty())
     {
         ErrorMessage = std::format(
             "Ensure failed at {}:{}:{}\nCallstack:\n{}",
-            InInfo.Location.file_name(),
-            InInfo.Location.line(),
-            InInfo.Location.column(),
-            CleanCallstack(InInfo.Stacktrace)
+            Info.Location.file_name(),
+            Info.Location.line(),
+            Info.Location.column(),
+            CleanCallstack(Info.Stacktrace)
         );
     }
     else
     {
         ErrorMessage = std::format(
             "Ensure '{}' failed at {}:{}:{}\nCallstack:\n{}",
-            InInfo.Message,
-            InInfo.Location.file_name(),
-            InInfo.Location.line(),
-            InInfo.Location.column(),
-            CleanCallstack(InInfo.Stacktrace)
+            Info.Message,
+            Info.Location.file_name(),
+            Info.Location.line(),
+            Info.Location.column(),
+            CleanCallstack(Info.Stacktrace)
         );
     }
 

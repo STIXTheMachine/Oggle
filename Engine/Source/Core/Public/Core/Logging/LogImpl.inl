@@ -172,11 +172,9 @@ void LogImpl(ELogVerbosity Verbosity, ELogSinks Sinks, std::string_view Formatte
 struct LOG_CATEGORY_NAME(InName) \
 { \
     LOG_CATEGORY_NAME(InName)() = delete; \
-    using enum Oggle::Logging::ELogVerbosity; \
-    using enum Oggle::Logging::ELogSinks; \
     static constexpr std::string_view                 CategoryName     { LOG_CATEGORY_NAME_STRING(InName) };\
-    static constexpr Oggle::Logging::ELogVerbosity    DefaultVerbosity { InDefaultVerbosity }; \
-    static constexpr Oggle::Logging::ELogSinks        DefaultSinks     { InDefaultSinks }; \
+    static constexpr Oggle::Logging::ELogVerbosity    DefaultVerbosity { Oggle::Logging::ELogVerbosity::InDefaultVerbosity }; \
+    static constexpr Oggle::Logging::ELogSinks        DefaultSinks     { Oggle::Logging::ELogSinks::InDefaultSinks }; \
     static inline    Oggle::Logging::ELogVerbosity    Verbosity        { DefaultVerbosity }; \
     static           Oggle::Logging::BasicFileSink&   GetLogFileSink(); \
 }; \
