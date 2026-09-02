@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.15)
 set(MODULE Testing)
 
 add_subdirectory(ThirdParty/doctest-2.5.3)
-add_library(${MODULE} INTERFACE)
+add_library(${MODULE} INTERFACE
+        Public/MovedFromCanary.hpp)
 target_include_directories(${MODULE} INTERFACE Public)
 target_link_libraries(${MODULE} INTERFACE doctest)
 

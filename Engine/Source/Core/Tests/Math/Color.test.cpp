@@ -1,4 +1,4 @@
-#include "TestingMinimal.hpp"
+#include "../../../Testing/Public/TestingMinimal.hpp"
 #include "Core/Math/Color.hpp"
 
 using namespace Oggle;
