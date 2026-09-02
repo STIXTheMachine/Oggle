@@ -2,6 +2,9 @@
 #include "Core/Utilities/Assert.hpp"
 #include "Core/Utilities/MemoryUtils.hpp"
 #include <string>
+#include <type_traits>
+#include <concepts>
+#include <memory>
 
 namespace Oggle
 {
@@ -14,7 +17,7 @@ namespace Oggle
 
     // A type-safe container which can hold either a value or an error type.
     template <typename Value, typename Error = std::string>
-    requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+    requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     struct Result
     {
         Result();
@@ -45,7 +48,7 @@ namespace Oggle
         [[nodiscard]] const Value& GetValue() const;
 
         // Returns Value if IsValid() is true. Otherwise returns the default value provided. Note that this results in a copy!
-        [[nodiscard]] Value GetValueOr(Value);
+        [[nodiscard]] Value GetValueOr(Value) const;
 
         // Take ownership of Value. Requires IsValid() to be true, asserts otherwise. Equivalent to std::move(GetValue()).
         [[nodiscard]] Value TakeValue();
@@ -55,7 +58,7 @@ namespace Oggle
         [[nodiscard]] const Error& GetError() const;
 
         // Returns Error if IsError() is true. Otherwise returns the default value provided. Note that this results in a copy!
-        [[nodiscard]] Error GetErrorOr(Error);
+        [[nodiscard]] Error GetErrorOr(Error) const;
 
         // Take ownership of Error. Requires IsError() to be true, asserts otherwise. Equivalent to std::move(GetError()).
         [[nodiscard]] Error TakeError();
@@ -89,21 +92,21 @@ namespace Oggle
     };
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result()
     {
         State = EResultState::Empty;
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::~Result()
     {
         Clear();
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(const Result& Other)
     {
         switch (Other.State)
@@ -121,7 +124,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>& Result<Value, Error>::operator=(const Result& Other)
     {
         if (this == &Other)
@@ -148,7 +151,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(Result&& Other)
     {
         switch (Other.State)
@@ -166,7 +169,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>& Result<Value, Error>::operator=(Result&& Other)
     {
         if (this == &Other)
@@ -193,7 +196,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(const Value& InValue)
     {
         std::construct_at(&Memory.InternalValue, InValue);
@@ -201,7 +204,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(Value&& InValue)
     {
         std::construct_at(&Memory.InternalValue, std::move(InValue));
@@ -209,7 +212,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(const Error& InError)
     {
         std::construct_at(&Memory.InternalError, InError);
@@ -217,7 +220,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Result<Value, Error>::Result(Error&& InError)
     {
         std::construct_at(&Memory.InternalError, std::move(InError));
@@ -225,23 +228,23 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     EResultState Result<Value, Error>::GetState() const { return State; }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     bool Result<Value, Error>::IsEmpty() const { return State == EResultState::Empty; }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     bool Result<Value, Error>::IsValid() const { return State == EResultState::Valid; }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     bool Result<Value, Error>::IsError() const { return State == EResultState::Error; }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Value& Result<Value, Error>::GetValue()
     {
         OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
@@ -249,21 +252,21 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     const Value& Result<Value, Error>::GetValue() const
     {
         OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
         return GetValueUnchecked();
     }
 
-    template<typename Value, typename Error> requires (!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
-    Value Result<Value, Error>::GetValueOr(Value Default)
+    template<typename Value, typename Error> requires (!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
+    Value Result<Value, Error>::GetValueOr(Value Default) const
     {
-        return IsValid() ? Memory.InternalValue : Default;
+        return IsValid() ? Memory.InternalValue : std::move(Default);
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Value Result<Value, Error>::TakeValue()
     {
         OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::TakeValue() when IsValid() is false");
@@ -271,7 +274,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Error& Result<Value, Error>::GetError()
     {
         OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false");
@@ -279,29 +282,29 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     const Error& Result<Value, Error>::GetError() const
     {
         OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false");
         return GetErrorUnchecked();
     }
 
-    template<typename Value, typename Error> requires (!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
-    Error Result<Value, Error>::GetErrorOr(Error Default)
+    template<typename Value, typename Error> requires (!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
+    Error Result<Value, Error>::GetErrorOr(Error Default) const
     {
-        return IsError() ? Memory.InternalError : Default;
+        return IsError() ? Memory.InternalError : std::move(Default);
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Error Result<Value, Error>::TakeError()
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false");
+        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::TakeError() when IsError() is false");
         return std::move(GetErrorUnchecked());
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     void Result<Value, Error>::SetValue(const Value& InValue)
     {
         if (&Memory.InternalValue == &InValue)
@@ -315,7 +318,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     void Result<Value, Error>::SetValue(Value&& InValue)
     {
         if (&Memory.InternalValue == &InValue)
@@ -329,7 +332,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     void Result<Value, Error>::SetError(const Error& InError)
     {
         if (&Memory.InternalError == &InError)
@@ -343,7 +346,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     void Result<Value, Error>::SetError(Error&& InError)
     {
         if (&Memory.InternalError == &InError)
@@ -357,7 +360,7 @@ namespace Oggle
     }
 
     template <typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     void Result<Value, Error>::Clear()
     {
         switch (State)
@@ -376,19 +379,19 @@ namespace Oggle
     }
 
     template<typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Value& Result<Value, Error>::GetValueUnchecked() { return Memory.InternalValue; }
 
     template<typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     const Value& Result<Value, Error>::GetValueUnchecked() const { return Memory.InternalValue; }
 
     template<typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     Error& Result<Value, Error>::GetErrorUnchecked() { return Memory.InternalError; }
 
     template<typename Value, typename Error>
-        requires(!std::same_as<std::remove_cvref<Value>, std::remove_cvref<Error>>)
+        requires(!std::same_as<std::remove_cvref_t<Value>, std::remove_cvref_t<Error>>)
     const Error& Result<Value, Error>::GetErrorUnchecked() const { return Memory.InternalError; }
 
 }
