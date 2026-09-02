@@ -1,6 +1,6 @@
-#include <utility>
+#include "Core/Utilities/Assert.hpp"
 
 int main()
 {
-    int Val1 = 42;
+    OGGLE_ASSERT_MSG(false, "Raggle Fraggle");
 }
