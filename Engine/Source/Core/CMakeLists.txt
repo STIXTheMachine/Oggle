@@ -25,3 +25,10 @@ target_compile_definitions(
 )
 
 add_library(Oggle::${MODULE} ALIAS ${MODULE})
+target_compile_options(Core PUBLIC -fno-rtti -fno-exceptions)
+target_link_libraries(Core PUBLIC stdc++exp)
+
+target_compile_definitions(Core PUBLIC
+        $<$<CONFIG:Debug>:OGGLE_ENABLE_ASSERTS>
+        $<IF:$<CONFIG:Debug>,OGGLE_ASSERTS_ENABLED=1,OGGLE_ASSERTS_ENABLED=0>
+)

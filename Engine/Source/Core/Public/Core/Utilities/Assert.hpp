@@ -1,40 +1,31 @@
 #pragma once
 #include <Core/Logging/Logging.hpp>
 #include <source_location>
+#include <stacktrace>
 DECLARE_LOG_CATEGORY(Assert, Fatal, Default);
 
-namespace Oggle::Private
+#if defined(OGGLE_ENABLE_ASSERTS)
+namespace Oggle::Assert::Private
 {
-    inline void AssertMsgImpl(bool Condition, std::string_view Message, std::source_location Location)
+    struct AssertInfo
     {
-        if (!Condition)
-        {
-            std::string LocationString = std::format(
-                "{}:{}:{} in function {}",
-                Location.file_name(),
-                Location.line(),
-                Location.column(),
-                Location.function_name()
-            );
-            LOG(Assert, FMT("Assertion failed: {}\nat {}", Message, LocationString));
-        }
+        std::string          Message;
+        std::source_location Location   = std::source_location::current();
+        std::stacktrace      Stacktrace = std::stacktrace::current();
     };
 
-    inline void AssertImpl(bool Condition, std::source_location Location)
-    {
-        if (!Condition)
-        {
-            std::string LocationString = std::format(
-                "{}:{}:{} in function {}",
-                Location.file_name(),
-                Location.line(),
-                Location.column(),
-                Location.function_name()
-            );
-            LOG(Assert, FMT("Assertion failed at {}", LocationString));
-        }
-    }
+    [[noreturn]] void AssertImpl(bool Condition, AssertInfo& Info);
+
+    void EnsureImpl(bool Condition, AssertInfo& Info);
 }
 
-#define OGGLE_ASSERT(Condition) { std::source_location Location = std::source_location::current(); Oggle::Private::AssertImpl(!!Condition, Location); }
-#define OGGLE_ASSERT_MSG(Condition, Message) { std::source_location Location = std::source_location::current(); Oggle::Private::AssertMsgImpl(!!Condition, Message, Location); }
+#define OGGLE_ASSERT(Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::AssertImpl(!!Condition, Info); }
+#define OGGLE_ASSERT_MSG(Condition, InMessage) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::AssertImpl(!!Condition, Info); }
+#define OGGLE_ENSURE(Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::EnsureImpl(!!Condition, Info); }
+#define OGGLE_ENSURE_MSG(Condition, InMessage) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::EnsureImpl(!!Condition, Info); }
+#else
+#define OGGLE_ASSERT(Condition)
+#define OGGLE_ASSERT_MSG(Condition, Message)
+#define OGGLE_ENSURE(Condition, InMessage)
+#define OGGLE_ENSURE_MSG(Condition, InMessage)
+#endif
