@@ -61,19 +61,17 @@ namespace Oggle
         [[nodiscard]] Value& GetValue();
         [[nodiscard]] const Value& GetValue() const;
 
-        // Take ownership of Value. Requires IsValid() to be true, asserts otherwise. Note that this will call Clear()!
-        [[nodiscard]] Value MoveValue();
+        // Take ownership of Value. Requires IsValid() to be true, asserts otherwise. Equivalent to std::move(GetValue()).
+        [[nodiscard]] Value TakeValue();
 
-        // Take ownership of Error. Requires IsError() to be true, asserts otherwise. Note that this will call Clear()!
-        [[nodiscard]] Error MoveError();
+        // Take ownership of Error. Requires IsError() to be true, asserts otherwise. Equivalent to std::move(GetError()).
+        [[nodiscard]] Error TakeError();
 
         // If IsValid() is true, returns Value. Otherwise returns the default value provided.
-        [[nodiscard]] Value& GetValue(Value&);
-        [[nodiscard]] const Value& GetValue(const Value&);
+        [[nodiscard]] Value& GetValueOr(Value&&);
 
         // If IsError() is true, returns Error. Otherwise returns the default error provided.
-        [[nodiscard]] Error& GetErrorOr(Error&);
-        [[nodiscard]] const Error& GetErrorOr(const Error&);
+        [[nodiscard]] Error& GetErrorOr(Error&&);
 
         // Set Value. (Destroys any Error which may be present)
         void SetValue(const Value&);
@@ -100,29 +98,22 @@ namespace Oggle
             }; // Required in case Value or Error is not trivially destructible
         } Memory;
 
+              Value& GetValueUnchecked();
+        const Value& GetValueUnchecked() const;
+              Error& GetErrorUnchecked();
+        const Error& GetErrorUnchecked() const;
+
         EResultState State{EResultState::Empty};
     };
 
     template <typename Value, typename Error>
-    Value& Result<Value, Error>::GetValue(Value& Default)
+    Value& Result<Value, Error>::GetValueOr(Value&& Default)
     {
         return IsValid() ? GetValue() : Default;
     }
 
     template <typename Value, typename Error>
-    const Value& Result<Value, Error>::GetValue(const Value& Default)
-    {
-        return IsValid() ? GetValue() : Default;
-    }
-
-    template <typename Value, typename Error>
-    Error& Result<Value, Error>::GetErrorOr(Error& Default)
-    {
-        return IsError() ? GetError() : Default;
-    }
-
-    template <typename Value, typename Error>
-    const Error& Result<Value, Error>::GetErrorOr(const Error& Default)
+    Error& Result<Value, Error>::GetErrorOr(Error&& Default)
     {
         return IsError() ? GetError() : Default;
     }
@@ -196,6 +187,18 @@ namespace Oggle
 
         State = EResultState::Empty;
     }
+
+    template<typename Value, typename Error>
+    Value& Result<Value, Error>::GetValueUnchecked() { return Memory.InternalValue; }
+
+    template<typename Value, typename Error>
+    const Value& Result<Value, Error>::GetValueUnchecked() const { return Memory.InternalValue; }
+
+    template<typename Value, typename Error>
+    Error& Result<Value, Error>::GetErrorUnchecked() { return Memory.InternalError; }
+
+    template<typename Value, typename Error>
+    const Error& Result<Value, Error>::GetErrorUnchecked() const { return Memory.InternalError; }
 
     template <typename Value, typename Error>
     Result<Value, Error>::Result()
@@ -285,46 +288,42 @@ namespace Oggle
     Error& Result<Value, Error>::GetError()
     {
         OGGLE_ASSERT(IsError());
-        return Memory.InternalError;
+        return GetErrorUnchecked();
     }
 
     template <typename Value, typename Error>
     const Error& Result<Value, Error>::GetError() const
     {
         OGGLE_ASSERT(IsError());
-        return Memory.InternalError;
+        return GetErrorUnchecked();
     }
 
     template <typename Value, typename Error>
     Value& Result<Value, Error>::GetValue()
     {
         OGGLE_ASSERT(IsValid());
-        return Memory.InternalValue;
+        return GetValueUnchecked();
     }
 
     template <typename Value, typename Error>
     const Value& Result<Value, Error>::GetValue() const
     {
         OGGLE_ASSERT(IsValid());
-        return Memory.InternalValue;
+        return GetValueUnchecked();
     }
 
     template <typename Value, typename Error>
-    Value Result<Value, Error>::MoveValue()
+    Value Result<Value, Error>::TakeValue()
     {
         OGGLE_ASSERT(IsValid());
-        auto Out = std::move(Memory.InternalValue);
-        Clear();
-        return Out;
+        return std::move(GetValueUnchecked());
     }
 
     template <typename Value, typename Error>
-    Error Result<Value, Error>::MoveError()
+    Error Result<Value, Error>::TakeError()
     {
         OGGLE_ASSERT(IsError());
-        auto Out = std::move(Memory.InternalError);
-        Clear();
-        return Out;
+        return std::move(GetErrorUnchecked());
     }
 
     template <typename Value, typename Error>

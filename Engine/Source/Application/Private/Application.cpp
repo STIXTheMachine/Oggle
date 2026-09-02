@@ -143,7 +143,7 @@ void Application::CreateMainWindow(WindowCreateInfo& WindowInfo)
         LOG(Application, Fatal, "MainWindow creation failed");
     }
 
-    MainWindow = WindowCreateResult.MoveValue();
+    MainWindow = WindowCreateResult.TakeValue();
 }
 
 void Application::CreateRenderer(RendererCreateInfo& RendererInfo)
