@@ -1,6 +1,6 @@
 #include "TestingMinimal.hpp"
 #include "Core/Vocabulary/Result.hpp"
-#include "Testing/Utilities/MovedFromCanary.hpp"
+#include "Testing/Utilities/Canaries.hpp"
 #include <memory>
 
 using namespace Oggle;
@@ -51,16 +51,15 @@ using namespace Oggle;
     } while(false)
 #pragma endregion
 
-
-TEST_CASE("Constructing")
+TEST_CASE("Construction")
 {
-    SUBCASE("Default Constructor")
+    SUBCASE("Default")
     {
         Result<int> Empty;
         CHECK_RESULT_IS_EMPTY(Empty); // Default constructed Result is empty
     }
 
-    SUBCASE("Constructing From Values")
+    SUBCASE("From Value")
     {
         SUBCASE("lvalue")
         {
@@ -78,7 +77,7 @@ TEST_CASE("Constructing")
         }
     }
 
-    SUBCASE("Constructing From Errors")
+    SUBCASE("From Error")
     {
         SUBCASE("lvalue")
         {
@@ -97,9 +96,248 @@ TEST_CASE("Constructing")
         }
     }
 
-    SUBCASE("Copying")
+    SUBCASE("Copy Construction")
     {
-        Result<int> InitialEmpty;
+        using CopyTestResult = Result<CopyCanary<int>, CopyCanary<float>>;
+
+        CopyTestResult InitialEmpty;
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+
+        CopyTestResult InitialValid { CopyCanary { 42 } };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
+
+        CopyTestResult InitialError { CopyCanary { 69.f } };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
+
+        CopyTestResult CopyConstructEmpty { InitialEmpty };
+        CHECK_RESULT_IS_EMPTY(CopyConstructEmpty);                                                  // Copying empty Result gives empty result
+        CHECK_RESULT_IS_EMPTY(InitialEmpty);                                                        // Empty state of copied-from Result is preserved
+
+        CopyTestResult CopyConstructValid { InitialValid };
+        CHECK_RESULT_IS_VALID(CopyConstructValid);                                                  // Copying valid result gives valid result
+        CHECK_RESULT_IS_VALID(InitialValid);                                                        // Valid state of copied-from Result is preserved
+        CHECK_EQ(CopyConstructValid.GetValue().WrappedValue, InitialValid.GetValue().WrappedValue); // Value of new copy equals Value of old copy
+        CHECK_EQ(InitialValid.GetValue().WrappedValue, 42);                                         // Value of old copy is unchanged
+        CHECK(InitialValid.GetValue().bCopied);                                                     // Operation induced a copy of Value
+
+        CopyTestResult CopyConstructError { InitialError };
+        CHECK_RESULT_IS_ERROR(CopyConstructError);                                                  // Copying errorful Result gives errorful Result
+        CHECK_RESULT_IS_ERROR(InitialError);                                                        // Errorful state of copied-from Result is preserved
+        CHECK_EQ(CopyConstructError.GetError().WrappedValue, InitialError.GetError().WrappedValue); // Error of new copy equals Error of old copy
+        CHECK_EQ(InitialError.GetError().WrappedValue, 69.f);                                       // Error of old copy is unchanged
+        CHECK(InitialError.GetError().bCopied);                                                     // Operation induced a copy of Error
+    }
+
+    SUBCASE("Move Constructor")
+    {
+        using MoveTestResult = Result<MoveCanary<int*>, MoveCanary<float*>>;
+
+        int  ValueResource    = 42;
+        int* ValueResourcePtr = &ValueResource;
+
+        float  ErrorResource    = 69.0f;
+        float* ErrorResourcePtr = &ErrorResource;
+
+        MoveTestResult InitialEmpty;
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+
+        MoveTestResult InitialValid { MoveCanary { ValueResourcePtr } };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
+
+        MoveTestResult InitialError { MoveCanary { ErrorResourcePtr } };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
+
+        MoveTestResult MoveConstructEmpty { std::move(InitialEmpty) };
+        CHECK_RESULT_IS_EMPTY(MoveConstructEmpty);                                // Moving empty Result gives empty result
+        CHECK_RESULT_IS_EMPTY(InitialEmpty);                                      // Empty state of moved-from Result is preserved
+
+        MoveTestResult MoveConstructValid { std::move(InitialValid) };
+        CHECK_RESULT_IS_VALID(MoveConstructValid);                                // Moving valid result gives valid result
+        CHECK_RESULT_IS_VALID(InitialValid);                                      // Valid state of moved-from Result is preserved
+        CHECK_EQ(MoveConstructValid.GetValue().WrappedValue, ValueResourcePtr);   // Moved-to Value should hold same resource as moved-from Value did
+        CHECK(InitialValid.GetValue().bMoved);                                    // Operation induced a move of Value
+
+        MoveTestResult MoveConstructError { std::move(InitialError) };
+        CHECK_RESULT_IS_ERROR(MoveConstructError);                                // Moving errorful Result gives errorful Result
+        CHECK_RESULT_IS_ERROR(InitialError);                                      // Errorful state of moved-from Result is preserved
+        CHECK_EQ(MoveConstructError.GetError().WrappedValue, ErrorResourcePtr);   // Moved-to Error should hold the same resource as the moved-from Error did
+        CHECK(InitialError.GetError().bMoved);                                    // Operation induced a move of Error
+    }
+} // Construction
+
+TEST_CASE("Assignment")
+{
+    SUBCASE("Copy Assignment")
+    {
+        using CopyTestResult = Result<CopyCanary<int>, CopyCanary<float>>;
+
+        CopyTestResult InitialEmpty;
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+
+        CopyTestResult InitialValid { CopyCanary { 42 } };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
+
+        CopyTestResult InitialError { CopyCanary { 69.f } };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
+
+        CopyTestResult CopyAssignEmpty;
+        CopyAssignEmpty = InitialEmpty;
+        CHECK_RESULT_IS_EMPTY(CopyAssignEmpty);                                                  // Copying empty Result gives empty result
+        CHECK_RESULT_IS_EMPTY(InitialEmpty);                                                     // Empty state of copied-from Result is preserved
+
+        CopyTestResult CopyAssignValid;
+        CopyAssignValid = InitialValid;
+        CHECK_RESULT_IS_VALID(CopyAssignValid);                                                  // Copying valid result gives valid result
+        CHECK_RESULT_IS_VALID(InitialValid);                                                     // Valid state of copied-from Result is preserved
+        CHECK_EQ(CopyAssignValid.GetValue().WrappedValue, InitialValid.GetValue().WrappedValue); // Value of new copy equals Value of old copy
+        CHECK_EQ(InitialValid.GetValue().WrappedValue, 42);                                      // Value of old copy is unchanged
+        CHECK(InitialValid.GetValue().bCopied);                                                  // Operation induced a copy of Value
+
+        CopyTestResult CopyAssignError;
+        CopyAssignError = InitialError;
+        CHECK_RESULT_IS_ERROR(CopyAssignError);                                                  // Copying errorful Result gives errorful Result
+        CHECK_RESULT_IS_ERROR(InitialError);                                                     // Errorful state of copied-from Result is preserved
+        CHECK_EQ(CopyAssignError.GetError().WrappedValue, InitialError.GetError().WrappedValue); // Error of new copy equals Error of old copy
+        CHECK_EQ(InitialError.GetError().WrappedValue, 69.f);                                    // Error of old copy is unchanged
+        CHECK(InitialError.GetError().bCopied);                                                  // Operation induced a copy of Error
+    }
+
+    SUBCASE("Move Assignment")
+    {
+        using MoveTestResult = Result<MoveCanary<int*>, MoveCanary<float*>>;
+
+        int  ValueResource    = 42;
+        int* ValueResourcePtr = &ValueResource;
+
+        float  ErrorResource    = 69.0f;
+        float* ErrorResourcePtr = &ErrorResource;
+
+        MoveTestResult InitialEmpty;
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+
+        MoveTestResult InitialValid { MoveCanary { ValueResourcePtr } };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
+
+        MoveTestResult InitialError { MoveCanary { ErrorResourcePtr } };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
+
+        MoveTestResult MoveAssignEmpty;
+        MoveAssignEmpty = std::move(InitialEmpty);
+        CHECK_RESULT_IS_EMPTY(MoveAssignEmpty);                              // Moving empty Result gives empty result
+        CHECK_RESULT_IS_EMPTY(InitialEmpty);                                 // Empty state of moved-from Result is preserved
+
+        MoveTestResult MoveAssignValid;
+        MoveAssignValid = std::move(InitialValid);
+        CHECK_RESULT_IS_VALID(MoveAssignValid);                              // Moving valid result gives valid result
+        CHECK_RESULT_IS_VALID(InitialValid);                                 // Valid state of moved-from Result is preserved
+        CHECK_EQ(MoveAssignValid.GetValue().WrappedValue, ValueResourcePtr); // Moved-to Value should hold same resource as moved-from Value did
+        CHECK(InitialValid.GetValue().bMoved);                               // Operation induced a move of Value
+
+        MoveTestResult MoveAssignError;
+        MoveAssignError = std::move(InitialError);
+        CHECK_RESULT_IS_ERROR(MoveAssignError);                              // Moving errorful Result gives errorful Result
+        CHECK_RESULT_IS_ERROR(InitialError);                                 // Errorful state of moved-from Result is preserved
+        CHECK_EQ(MoveAssignError.GetError().WrappedValue, ErrorResourcePtr); // Moved-to Error should hold the same resource as the moved-from Error did
+        CHECK(InitialError.GetError().bMoved);                               // Operation induced a move of Error
+    }
+} // Assignment
+
+TEST_CASE("State queries")
+{
+    Result<int> EmptyResult;
+    REQUIRE_RESULT_IS_EMPTY(EmptyResult);
+
+    Result<int> ValidResult { 42 };
+    REQUIRE_RESULT_IS_VALID(ValidResult);
+
+    Result<int> ErrorResult { "Hello" };
+    REQUIRE_RESULT_IS_ERROR(ErrorResult);
+
+    SUBCASE("IsEmpty()")
+    {
+        CHECK_RESULT_IS_EMPTY(EmptyResult);
+    }
+    SUBCASE("IsValid()")
+    {
+        CHECK_RESULT_IS_VALID(ValidResult);
+    }
+    SUBCASE("IsError()")
+    {
+        CHECK_RESULT_IS_ERROR(ErrorResult);
+    }
+
+    SUBCASE("operator bool()")
+    {
+        CHECK_FALSE(EmptyResult);
+        CHECK(ValidResult);
+        CHECK_FALSE(ErrorResult);
+    }
+} // State Queries
+
+TEST_CASE("Access")
+{
+    SUBCASE("GetValue()")
+    {
+        Result<int> ValidResult { 42 };
+        REQUIRE_RESULT_IS_VALID(ValidResult);
+
+        const Result<int> ConstValidResult { 42 };
+        REQUIRE_RESULT_IS_VALID(ConstValidResult);
+
+        CHECK_EQ(ValidResult.GetValue(), 42);
+        CHECK_EQ(ConstValidResult.GetValue(), 42);
+    }
+
+    SUBCASE("GetError()")
+    {
+        Result<int> ErrorResult { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(ErrorResult);
+
+        const Result<int> ConstErrorResult { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(ConstErrorResult);
+
+        CHECK_EQ(ErrorResult.GetError(), "Hello");
+        CHECK_EQ(ConstErrorResult.GetError(), "Hello");
+    }
+
+    SUBCASE("GetValueOr())")
+    {
+        Result<int> EmptyResult {};
+        REQUIRE_RESULT_IS_EMPTY(EmptyResult);
+
+        Result<int> ValidResult { 42 };
+        REQUIRE_RESULT_IS_VALID(ValidResult);
+
+        Result<int> ErrorResult { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(ErrorResult);
+
+        CHECK_EQ(EmptyResult.GetValueOr(69), 69);
+        CHECK_EQ(ValidResult.GetValueOr(69), 42);
+        CHECK_EQ(ErrorResult.GetValueOr(69), 69);
+    }
+
+    SUBCASE("GetErrorOr()")
+    {
+        Result<int> EmptyResult {};
+        REQUIRE_RESULT_IS_EMPTY(EmptyResult);
+
+        Result<int> ValidResult { 42 };
+        REQUIRE_RESULT_IS_VALID(ValidResult);
+
+        Result<int> ErrorResult { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(ErrorResult);
+
+        CHECK_EQ(EmptyResult.GetErrorOr("Goodbye"), "Goodbye");
+        CHECK_EQ(ValidResult.GetErrorOr("Goodbye"), "Goodbye");
+        CHECK_EQ(ErrorResult.GetErrorOr("Goodbye"), "Hello");
+    }
+} // Access
+
+TEST_CASE("Mutation")
+{
+    SUBCASE("SetValue()")
+    {
+        Result<int> InitialEmpty {};
         REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
 
         Result<int> InitialValid { 42 };
@@ -108,115 +346,88 @@ TEST_CASE("Constructing")
         Result<int> InitialError { "Hello" };
         REQUIRE_RESULT_IS_ERROR(InitialError);
 
-        SUBCASE("Copy Construction")
-        {
-            Result<int> CopyConstructEmpty { InitialEmpty };
-            CHECK_RESULT_IS_EMPTY(CopyConstructEmpty);                        // Copying empty Result gives empty result
-            CHECK_RESULT_IS_EMPTY(InitialEmpty);                              // Empty state of copied-from Result is preserved
+        InitialEmpty.SetValue(69);
+        CHECK_RESULT_IS_VALID(InitialEmpty);
+        CHECK_EQ(InitialEmpty.GetValue(), 69);
 
-            Result<int> CopyConstructValid { InitialValid };
-            CHECK_RESULT_IS_VALID(CopyConstructValid);                        // Copying valid result gives valid result
-            CHECK_RESULT_IS_VALID(InitialValid);                              // Valid state of copied-from Result is preserved
-            CHECK_EQ(CopyConstructValid.GetValue(), InitialValid.GetValue()); // Value of new copy equals Value of old copy
-            CHECK_EQ(InitialValid.GetValue(), 42);                            // Value of old copy is unchanged
+        InitialValid.SetValue(69);
+        CHECK_RESULT_IS_VALID(InitialValid);
+        CHECK_EQ(InitialValid.GetValue(), 69);
 
-            Result<int> CopyConstructError { InitialError };
-            CHECK_RESULT_IS_ERROR(CopyConstructError);                        // Copying errorful Result gives errorful Result
-            CHECK_RESULT_IS_ERROR(InitialError);                              // Errorful state of copied-from Result is preserved
-            CHECK_EQ(CopyConstructError.GetError(), InitialError.GetError()); // Error of new copy equals Error of old copy
-            CHECK_EQ(InitialError.GetError(), "Hello");                       // Error of old copy is unchanged
-        }
-
-        SUBCASE("Copy Assignment")
-        {
-            Result<int> CopyAssignEmpty;
-            CopyAssignEmpty = InitialEmpty;
-            CHECK_RESULT_IS_EMPTY(CopyAssignEmpty);                           // Copying empty Result gives empty result
-            CHECK_RESULT_IS_EMPTY(InitialEmpty);                              // Empty state of copied-from Result is preserved
-
-            Result<int> CopyAssignValid;
-            CopyAssignValid = InitialValid;
-            CHECK_RESULT_IS_VALID(CopyAssignValid);                           // Copying valid result gives valid result
-            CHECK_RESULT_IS_VALID(InitialValid);                              // Valid state of copied-from Result is preserved
-            CHECK_EQ(CopyAssignValid.GetValue(), InitialValid.GetValue());    // Value of new copy equals Value of old copy
-            CHECK_EQ(InitialValid.GetValue(), 42);                            // Value of old copy is unchanged
-
-            Result<int> CopyAssignError;
-            CopyAssignError = InitialError;
-            CHECK_RESULT_IS_ERROR(CopyAssignError);                           // Copying errorful Result gives errorful Result
-            CHECK_RESULT_IS_ERROR(InitialError);                              // Errorful state of copied-from Result is preserved
-            CHECK_EQ(CopyAssignError.GetError(), InitialError.GetError());    // Error of new copy equals Error of old copy
-            CHECK_EQ(InitialError.GetError(), "Hello");                       // Error of old copy is unchanged
-        }
+        InitialError.SetValue(69);
+        CHECK_RESULT_IS_VALID(InitialError);
+        CHECK_EQ(InitialError.GetValue(), 69);
     }
 
-    SUBCASE("Moving")
+    SUBCASE("SetError()")
     {
-        using MoveTestResult = Result<MovedFromCanary<int*>, MovedFromCanary<float*>>;
+        Result<int> InitialEmpty {};
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
 
-        int  ValueResource    = 42;
-        int* ValueResourcePtr = &ValueResource;
+        Result<int> InitialValid { 42 };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
 
-        float  ErrorResource    = 69.0f;
-        float* ErrorResourcePtr = &ErrorResource;
+        Result<int> InitialError { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
 
-        SUBCASE("Move Construction")
-        {
-            MoveTestResult InitialEmpty;
-            REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+        InitialEmpty.SetError("Goodbye");
+        CHECK_RESULT_IS_ERROR(InitialEmpty);
+        CHECK_EQ(InitialEmpty.GetError(), "Goodbye");
 
-            MoveTestResult InitialValid { ValueResourcePtr };
-            REQUIRE_RESULT_IS_VALID(InitialValid);
+        InitialValid.SetError("Goodbye");
+        CHECK_RESULT_IS_ERROR(InitialValid);
+        CHECK_EQ(InitialValid.GetError(), "Goodbye");
 
-            MoveTestResult InitialError { ErrorResourcePtr };
-            REQUIRE_RESULT_IS_ERROR(InitialError);
-
-            MoveTestResult MoveConstructEmpty { std::move(InitialEmpty) };
-            CHECK_RESULT_IS_EMPTY(MoveConstructEmpty);                                // Moving empty Result gives empty result
-            CHECK_RESULT_IS_EMPTY(InitialEmpty);                                      // Empty state of moved-from Result is preserved
-
-            MoveTestResult MoveConstructValid { std::move(InitialValid) };
-            CHECK_RESULT_IS_VALID(MoveConstructValid);                                // Moving valid result gives valid result
-            CHECK_RESULT_IS_VALID(InitialValid);                                      // Valid state of moved-from Result is preserved
-            CHECK_EQ(MoveConstructValid.GetValue().WrappedValue, ValueResourcePtr);   // Moved-to Value should hold same resource as moved-from Value did
-            CHECK_EQ(InitialValid.GetValue().bMovedFrom, true);                       // Moved-from Value should be in a moved-from state
-
-            MoveTestResult MoveConstructError { std::move(InitialError) };
-            CHECK_RESULT_IS_ERROR(MoveConstructError);                                // Moving errorful Result gives errorful Result
-            CHECK_RESULT_IS_ERROR(InitialError);                                      // Errorful state of moved-from Result is preserved
-            CHECK_EQ(MoveConstructError.GetError().WrappedValue, ErrorResourcePtr);   // Moved-to Error should hold the same resource as the moved-from Error did
-            CHECK_EQ(InitialError.GetError().bMovedFrom, true);                       // Moved-from Error should be in a moved-from state
-        }
-
-        SUBCASE("Move Assignment")
-        {
-            MoveTestResult InitialEmpty;
-            REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
-
-            MoveTestResult InitialValid { ValueResourcePtr };
-            REQUIRE_RESULT_IS_VALID(InitialValid);
-
-            MoveTestResult InitialError { ErrorResourcePtr };
-            REQUIRE_RESULT_IS_ERROR(InitialError);
-
-            MoveTestResult MoveAssignEmpty;
-            MoveAssignEmpty = std::move(InitialEmpty);
-            CHECK_RESULT_IS_EMPTY(MoveAssignEmpty);                                   // Moving empty Result gives empty result
-            CHECK_RESULT_IS_EMPTY(InitialEmpty);                                      // Empty state of moved-from Result is preserved
-
-            MoveTestResult MoveAssignValid;
-            MoveAssignValid = std::move(InitialValid);
-            CHECK_RESULT_IS_VALID(MoveAssignValid);                                   // Moving valid result gives valid result
-            CHECK_RESULT_IS_VALID(InitialValid);                                      // Valid state of moved-from Result is preserved
-            CHECK_EQ(MoveAssignValid.GetValue().WrappedValue, ValueResourcePtr);      // Moved-to Value should hold same resource as moved-from Value did
-            CHECK_EQ(InitialValid.GetValue().bMovedFrom, true);                       // Moved-from Value should be in a moved-from state
-
-            MoveTestResult MoveAssignError;
-            MoveAssignError = std::move(InitialError);
-            CHECK_RESULT_IS_ERROR(MoveAssignError);                                   // Moving errorful Result gives errorful Result
-            CHECK_RESULT_IS_ERROR(InitialError);                                      // Errorful state of moved-from Result is preserved
-            CHECK_EQ(MoveAssignError.GetError().WrappedValue, ErrorResourcePtr);      // Moved-to Error should hold the same resource as the moved-from Error did
-            CHECK_EQ(InitialError.GetError().bMovedFrom, true);                       // Moved-from Error should be in a moved-from state
-        }
+        InitialError.SetError("Goodbye");
+        CHECK_RESULT_IS_ERROR(InitialError);
+        CHECK_EQ(InitialError.GetError(), "Goodbye");
     }
-}
+
+    SUBCASE("Clear()")
+    {
+        Result<int> InitialEmpty {};
+        REQUIRE_RESULT_IS_EMPTY(InitialEmpty);
+
+        Result<int> InitialValid { 42 };
+        REQUIRE_RESULT_IS_VALID(InitialValid);
+
+        Result<int> InitialError { "Hello" };
+        REQUIRE_RESULT_IS_ERROR(InitialError);
+
+        InitialEmpty.Clear();
+        CHECK_RESULT_IS_EMPTY(InitialEmpty);
+
+        InitialValid.Clear();
+        CHECK_RESULT_IS_EMPTY(InitialValid);
+
+        InitialError.Clear();
+        CHECK_RESULT_IS_EMPTY(InitialError);
+    }
+} // Mutation
+
+TEST_CASE("Extraction")
+{
+    using TakeTestResult = Result<MoveCanary<int>, MoveCanary<const char*>>;
+
+    SUBCASE("TakeValue()")
+    {
+        TakeTestResult ValidResult { MoveCanary { 42 } };
+        REQUIRE_RESULT_IS_VALID(ValidResult);
+
+        MoveCanary<int> MovedValue = ValidResult.TakeValue();
+        CHECK_RESULT_IS_VALID(ValidResult);
+        CHECK_EQ(MovedValue.WrappedValue, 42);
+        CHECK(ValidResult.GetValue().bMoved);
+    }
+
+    SUBCASE("TakeError()")
+    {
+        TakeTestResult ErrorResult { MoveCanary { "Hello" } };
+        REQUIRE_RESULT_IS_ERROR(ErrorResult);
+
+        MoveCanary<const char*> MovedError = ErrorResult.TakeError();
+        CHECK_RESULT_IS_ERROR(ErrorResult);
+        CHECK_EQ(MovedError.WrappedValue, "Hello");
+        CHECK(ErrorResult.GetError().bMoved);
+    }
+} // Extraction
