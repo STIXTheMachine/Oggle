@@ -208,3 +208,17 @@ Oggle::Logging::BasicFileSink& LOG_CATEGORY_NAME(InName)::GetLogFileSink() \
 static Oggle::Logging::BasicFileSink Sink { LOG_CATEGORY_NAME_STRING(InName), LOG_CATEGORY_NAME_STRING(InName) }; \
 return Sink; \
 }
+
+// TODO: The functions here shouldn't be inlined (probably extern'd?) but for now they're just all here so I remember what I was doing.
+#define DECLARE_LOG_CATEGORY_NEW(CategoryName, CategoryDefaultVerbosity, CategoryMaxVerbosity, CategoryDefaultSinks) \
+namespace LOG_CATEGORY_NAME(CategoryName) \
+{ \
+    static        constexpr std::string_view Name                  = LOG_CATEGORY_NAME(CategoryName); \
+    static        constexpr ELogVerbosity    DefaultMaxVerbosity   = CategoryDefaultVerbosity; \
+    static inline constinit ELogVerbosity    MaxVerbosity          = DefaultMaxVerbosity; \
+    static        constexpr ELogSinks        DefaultSinks          = CategoryDefaultSinks; \
+    static inline constinit ELogSinks        Sinks                 = DefaultSinks; \
+    static                  void             ResetMaxVerbosity()   { MaxVerbosity = DefaultMaxVerbosity; } \
+    static                  void             ResetSinks()          { Sinks = DefaultSinks; } \
+    static                  BasicFileSink&   GetCategoryFileSink() { static BasicFileSink Sink { LOG_CATEGORY_NAME_STRING(InName), LOG_CATEGORY_NAME_STRING(InName) }; return Sink; } \
+};
