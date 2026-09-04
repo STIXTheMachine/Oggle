@@ -5,6 +5,11 @@
 namespace Private // Oggle::Logging::Private
 {
 
+// Eventually this will be configurable, but for now they are just here so I can build the implementation around them.
+static bool SuppressLogheaders() { return false; }
+static bool SupporesLogHeaderCategories() { return false; }
+static bool SuppresLogHeaderVerbosity() { return false; }
+
 BasicStdOutSink& GStdOutSink();
 BasicStdErrSink& GStdErrSink();
 BasicFileSink&   GLogFileSink();
@@ -103,17 +108,34 @@ void LogImpl(ELogVerbosity Verbosity, ELogSinks Sinks, std::string_view Formatte
         return;
     }
 
-    const std::string Header = std::format("[{}] ", Category::CategoryName);
-
-    // One for the beginning of the message plus one for every newline
-    const size_t HeaderCount = 1 + std::count(FormattedMessage_NoHeaders.begin(), FormattedMessage_NoHeaders.end(), '\n');
-    const size_t HeadersTotalSize = Header.size() * HeaderCount;
-    const size_t FullyFormattedMessageSize = FormattedMessage_NoHeaders.size() + HeadersTotalSize;
-
     std::string FullyFormattedMessage;
-    FullyFormattedMessage.reserve(FullyFormattedMessageSize);
 
-    InsertLogHeaders(Header, FormattedMessage_NoHeaders, FullyFormattedMessage);
+    if (!SuppressLogheaders()) [[likely]]
+    {
+        std::string Header;
+        if (!SupporesLogHeaderCategories())
+        {
+            Header += std::format("[{}] ", Category::CategoryName);
+        }
+        if (!SuppresLogHeaderVerbosity())
+        {
+            Header += std::format("[{}] ", ParseToString(Category::Verbosity));
+        }
+
+        // One header for the beginning of the message plus one after every newline in the message itself
+        const size_t NumHeaders = 1 + std::count(FormattedMessage_NoHeaders.begin(), FormattedMessage_NoHeaders.end(), '\n');
+        const size_t HeadersTotalSize = Header.size() * NumHeaders;
+        const size_t FullyFormattedMessageSize = FormattedMessage_NoHeaders.size() + HeadersTotalSize;
+
+        FullyFormattedMessage.reserve(FullyFormattedMessageSize);
+
+        InsertLogHeaders(Header, FormattedMessage_NoHeaders, FullyFormattedMessage);
+    }
+    else
+    {
+        FullyFormattedMessage = FormattedMessage_NoHeaders;
+    }
+
 
     DispatchToSinks(Sinks, Category::GetLogFileSink(), FullyFormattedMessage);
 

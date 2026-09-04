@@ -1,4 +1,5 @@
 #pragma once
+#include <utility>
 #include <Core/Utilities/Bitflags.hpp>
 #include <Core/Vocabulary/OggleType.hpp>
 #include <Core/Logging/Sinks.hpp>
@@ -98,25 +99,55 @@ ENUM_FLAG_OPS(ELogSinks)
 /// See also: ELogSinks, GMaxLogLevel.
 enum class ELogVerbosity : uint8
 {
-    /// Logs critical errors and terminates the application.
-    /// These messages are always processed regardless of category verbosity.
+    /// These messages are always processed regardless of category's max verbosity.
+    Always     = 0,
+
+    /// For errors that prevent the program from being able to continue execution.
     Fatal       = 1,
 
-    /// Logs recoverable errors that should be addressed.
+    /// For recoverable errors that should be addressed.
     Error       = 2,
 
-    /// Logs warnings about potential issues or unexpected situations.
+    /// For warnings about potential issues or unexpected situations.
     Warning     = 3,
 
-    /// Logs general informational messages about application state.
+    /// For general informational messages about application state.
     Info        = 4,
 
-    /// Logs additional detailed messages useful for debugging.
+    /// Fo additional detailed messages useful for debugging.
     Verbose     = 5,
 
-    /// Logs very detailed messages, often too verbose for normal use.
+    /// For very detailed messages which would otherwise spam the output log.
     VeryVerbose = 6,
+
+    // Never log under any circumstances.
+    Never = 255,
 };
+
+constexpr std::string_view ParseToString(ELogVerbosity Verbosity)
+{
+    switch (Verbosity)
+    {
+        case ELogVerbosity::Always:
+            return "Always";
+        case ELogVerbosity::Fatal:
+            return "Fatal";
+        case ELogVerbosity::Error:
+            return "Error";
+        case ELogVerbosity::Warning:
+            return "Warning";
+        case ELogVerbosity::Info:
+            return "Info";
+        case ELogVerbosity::Verbose:
+            return "Verbose";
+        case ELogVerbosity::VeryVerbose:
+            return "VeryVerbose";
+        case ELogVerbosity::Never:
+            return "Never";
+    }
+
+    std::unreachable();
+}
 
 constexpr std::strong_ordering operator<=>(ELogVerbosity Lhs, ELogVerbosity Rhs)
 {

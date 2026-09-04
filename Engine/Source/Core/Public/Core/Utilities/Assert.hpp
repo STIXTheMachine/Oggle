@@ -2,7 +2,7 @@
 #include <Core/Logging/Logging.hpp>
 #include <source_location>
 #include <stacktrace>
-DECLARE_LOG_CATEGORY(Assert, Fatal, Default);
+DECLARE_LOG_CATEGORY(Assert, Warning, Default);
 
 #if defined(OGGLE_ENABLE_ASSERTS)
 namespace Oggle::Private::Assert
@@ -20,7 +20,7 @@ namespace Oggle::Private::Assert
 }
 
 
-#define OGGLE_ASSERT_MSG(Condition, InMessage) \
+#define OGGLE_ASSERT_MSG(Condition, Message) \
 { \
     if (!Condition) \
     { \
@@ -31,7 +31,7 @@ namespace Oggle::Private::Assert
 #define OGGLE_ASSERT(Condition) OGGLE_ASSERT_MSG(Condition, "")
 
 
-#define OGGLE_ENSURE_MSG(Condition, InMessage) \
+#define OGGLE_ENSURE_MSG(Condition, Message) \
 { \
     if (!Condition) \
     { \
