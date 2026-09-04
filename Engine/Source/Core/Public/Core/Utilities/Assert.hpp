@@ -5,13 +5,13 @@
 DECLARE_LOG_CATEGORY(Assert, Fatal, Default);
 
 #if defined(OGGLE_ENABLE_ASSERTS)
-namespace Oggle::Assert::Private
+namespace Oggle::Private::Assert
 {
     struct AssertInfo
     {
-        std::string          Message;
-        std::source_location Location   = std::source_location::current();
-        std::stacktrace      Stacktrace = std::stacktrace::current();
+        std::string          ErrorMessage;
+        std::source_location Location;
+        std::stacktrace      Stacktrace;
     };
 
     [[noreturn]] void AssertImpl(AssertInfo& Info);
@@ -19,10 +19,29 @@ namespace Oggle::Assert::Private
     void EnsureImpl(AssertInfo& Info);
 }
 
-#define OGGLE_ASSERT(Condition) { if (!Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::AssertImpl(Info); } }
-#define OGGLE_ASSERT_MSG(Condition, InMessage) { if(!Condition) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::AssertImpl(Info); } }
-#define OGGLE_ENSURE(Condition) { if (!Condition) { Oggle::Assert::Private::AssertInfo Info; Oggle::Assert::Private::EnsureImpl(Info); } }
-#define OGGLE_ENSURE_MSG(Condition, InMessage) { if(!Condition) { Oggle::Assert::Private::AssertInfo Info { .Message = std::string { InMessage } }; Oggle::Assert::Private::EnsureImpl(Info); } }
+
+#define OGGLE_ASSERT_MSG(Condition, InMessage) \
+{ \
+    if (!Condition) \
+    { \
+        Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
+        Oggle::Private::Assert::AssertImpl(Info); \
+    } \
+}
+#define OGGLE_ASSERT(Condition) OGGLE_ASSERT_MSG(Condition, "")
+
+
+#define OGGLE_ENSURE_MSG(Condition, InMessage) \
+{ \
+    if (!Condition) \
+    { \
+        Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
+        Oggle::Private::Assert::EnsureImpl(Info); \
+    } \
+}
+#define OGGLE_ENSURE(Condition) OGGLE_ENSURE_MSG(Condition, "")
+
+
 #else
 #define OGGLE_ASSERT(Condition)
 #define OGGLE_ASSERT_MSG(Condition, Message)
