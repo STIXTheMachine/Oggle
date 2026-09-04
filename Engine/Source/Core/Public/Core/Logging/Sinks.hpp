@@ -7,7 +7,7 @@
 #include <mutex>
 #include <string>
 
-namespace Oggle::Logging
+namespace Oggle
 {
 
 using Message = std::string_view;
@@ -123,4 +123,4 @@ private:
     std::ofstream File;
 };
 static_assert(LogSink<BasicFileSink>);
-} // namespace Oggle::Logging
+} // namespace Oggle
