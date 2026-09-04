@@ -10,8 +10,6 @@ file(
 add_executable(
     ${APPNAME}
     ${SOURCES}
-        Source/Public/NewLogTest.cpp
-        Source/Public/NewLogTest.h
 )
 
 target_link_libraries(${APPNAME} PRIVATE Oggle)

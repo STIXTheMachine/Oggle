@@ -1,10 +1,11 @@
 #include "WindowingModule.hpp"
 #include "CoreMinimal.hpp"
 #include "GLFW/glfw3.h"
-#include "../Public/LogWindowing.hpp"
+#include "LogWindowing.hpp"
 
 void Oggle::WindowingModule::Init()
 {
+    using namespace Oggle;
     LOG(Windowing, "Initializing windowing library...");
     glfwInit();
 }

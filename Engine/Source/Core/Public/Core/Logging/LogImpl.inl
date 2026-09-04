@@ -209,7 +209,7 @@ static Oggle::BasicFileSink Sink { LOG_CATEGORY_NAME_STRING(InName), LOG_CATEGOR
 return Sink; \
 }
 
-#define DECLARE_LOG_CATEGORY_NEW(CategoryName, CategoryDefaultMessageVerbosity, CategoryDefaultVerbosityMask, CategoryDefaultSinks) \
+#define DECLARE_LOG_CATEGORY(CategoryName, CategoryDefaultMessageVerbosity, CategoryDefaultVerbosityMask, CategoryDefaultSinks) \
 namespace LOG_CATEGORY_NAME(CategoryName) \
 { \
     inline constexpr std::string_view      Name                    = LOG_CATEGORY_NAME_STRING(CategoryName); \

@@ -1,6 +1,5 @@
 #include "Core/Utilities/Assert.hpp"
 #include <sstream>
-DEFINE_LOG_CATEGORY(Assert)
 
 static std::string CleanCallstack(std::stacktrace& Stack)
 {

@@ -4,12 +4,12 @@ set(MODULE Core)
 add_subdirectory(Tests)
 
 add_library(${MODULE}
-        Private/Logging/LoggingGlobals.cpp
         Private/ModuleInterface.cpp
         Private/Math/Color.cpp
         Private/Math/ColorConversionTables.cpp
         Private/Utilities/Assert.cpp
         Public/Core/Utilities/MemoryUtils.hpp
+        Private/Logging/Logging.cpp
 )
 
 target_include_directories(
@@ -31,4 +31,5 @@ target_link_libraries(Core PUBLIC stdc++exp)
 target_compile_definitions(Core PUBLIC
         $<$<CONFIG:Debug>:OGGLE_ENABLE_ASSERTS>
         $<IF:$<CONFIG:Debug>,OGGLE_ASSERTS_ENABLED=1,OGGLE_ASSERTS_ENABLED=0>
+        $<$<NOT:$<CONFIG:Release>>:OGGLE_ENABLE_LOGGING>
 )
