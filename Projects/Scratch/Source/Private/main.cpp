@@ -1,6 +1,8 @@
-#include "Core/Logging/Logging.hpp"
+#include "CoreMinimal.hpp"
+
+using namespace Oggle;
 
 int main()
 {
-    LOG("Hello, World!");
+    Optional<int> {};
 }

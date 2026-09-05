@@ -4,6 +4,7 @@ set(MODULE CoreTest)
 # Must be an object library to avoid static linking issues!
 add_library(${MODULE} OBJECT
         Vocabulary/Result.test.cpp
+        Vocabulary/Optional.test.cpp
         Math/Color.test.cpp
 )
 
