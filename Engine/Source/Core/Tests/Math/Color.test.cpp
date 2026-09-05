@@ -3,6 +3,7 @@
 
 using namespace Oggle;
 
+TEST_SUITE_BEGIN("ColorConversion");
 TEST_CASE("Color Space Conversions")
 {
     SUBCASE("sRGB to Linear")
@@ -28,3 +29,4 @@ TEST_CASE("Color Space Conversions")
         }
     }
 }
+TEST_SUITE_END();

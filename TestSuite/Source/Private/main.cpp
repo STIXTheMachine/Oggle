@@ -5,8 +5,6 @@ int main(int argc, const char * argv[])
 {
     doctest::Context context;
 
-    context.addFilter("test-case-exclude", "Color*");
-
     context.applyCommandLine(argc, argv);
 
     int res = context.run();
