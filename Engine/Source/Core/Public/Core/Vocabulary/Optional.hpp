@@ -1,5 +1,6 @@
 #pragma once
 #include <utility>
+#include "Core/Utilities/Assert.hpp"
 
 namespace Oggle
 {
@@ -19,6 +20,9 @@ namespace Oggle
         Optional(const Optional&);
         Optional& operator=(const Optional&);
 
+        template<typename ValueTypeFwd>
+        Optional& operator=(ValueTypeFwd&&);
+
         Optional(Optional&&);
         Optional& operator=(Optional&&);
 
@@ -32,6 +36,8 @@ namespace Oggle
         [[nodiscard]] bool              IsEmpty()  const;
         [[nodiscard]] explicit operator bool()     const;
         [[nodiscard]] EOptionalState    GetState() const;
+
+                      void              Clear();
 
     private:
         ValueType InternalValue;
@@ -70,6 +76,13 @@ namespace Oggle
         }
 
         return *this;
+    }
+
+    template<typename ValueType>
+    template<typename ValueTypeFwd>
+    Optional<ValueType>& Optional<ValueType>::operator=(ValueTypeFwd&& InValue)
+    {
+        SetValue(std::forward<ValueTypeFwd>(InValue));
     }
 
     template<typename ValueType>
@@ -140,6 +153,12 @@ namespace Oggle
     EOptionalState Optional<ValueType>::GetState() const
     {
         return State;
+    }
+
+    template<typename ValueType>
+    void Optional<ValueType>::Clear()
+    {
+
     }
 
     template<typename ValueType>
