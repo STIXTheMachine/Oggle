@@ -64,12 +64,12 @@ namespace Oggle
         [[nodiscard]] ErrorType TakeError();
 
         // Set Value. (Destroys any Error which may be present)
-        void SetValue(const ValueType&);
-        void SetValue(ValueType&&);
+        template<typename ValueTypeFwd>
+        void SetValue(ValueTypeFwd&&);
 
         // Set Error. (Destroys any Value which may be present)
-        void SetError(const ErrorType&);
-        void SetError(ErrorType&&);
+        template<typename ErrorTypeFwd>
+        void SetError(ErrorTypeFwd&&);
 
         // Return the Result to its default empty state. Destroys any stored Value or Error.
         void Clear();
@@ -305,57 +305,31 @@ namespace Oggle
 
     template <typename ValueType, typename ErrorType>
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
-    void Result<ValueType, ErrorType>::SetValue(const ValueType& InValue)
+    template<typename ValueTypeFwd>
+    void Result<ValueType, ErrorType>::SetValue(ValueTypeFwd&& InValue)
     {
-        if (&Memory.InternalValue == &InValue)
+        if (SAME_ADDRESS(&Memory.InternalError, &InValue))
         {
             return;
         }
 
         Clear();
-        std::construct_at(&Memory.InternalValue, InValue);
+        std::construct_at(&Memory.InternalValue, std::forward<ValueTypeFwd>(InValue));
         State = EResultState::Valid;
     }
 
     template <typename ValueType, typename ErrorType>
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
-    void Result<ValueType, ErrorType>::SetValue(ValueType&& InValue)
+    template<typename ErrorTypeFwd>
+    void Result<ValueType, ErrorType>::SetError(ErrorTypeFwd&& InError)
     {
-        if (&Memory.InternalValue == &InValue)
+        if (SAME_ADDRESS(&Memory.InternalError, &InError))
         {
             return;
         }
 
         Clear();
-        std::construct_at(&Memory.InternalValue, std::move(InValue));
-        State = EResultState::Valid;
-    }
-
-    template <typename ValueType, typename ErrorType>
-        requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
-    void Result<ValueType, ErrorType>::SetError(const ErrorType& InError)
-    {
-        if (&Memory.InternalError == &InError)
-        {
-            return;
-        }
-
-        Clear();
-        std::construct_at(&Memory.InternalError, InError);
-        State = EResultState::Error;
-    }
-
-    template <typename ValueType, typename ErrorType>
-        requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
-    void Result<ValueType, ErrorType>::SetError(ErrorType&& InError)
-    {
-        if (&Memory.InternalError == &InError)
-        {
-            return;
-        }
-
-        Clear();
-        std::construct_at(&Memory.InternalError, std::move(InError));
+        std::construct_at(&Memory.InternalError, std::forward<ErrorTypeFwd>(InError));
         State = EResultState::Error;
     }
 
