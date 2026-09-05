@@ -29,6 +29,7 @@ namespace Oggle
         [[nodiscard]] ValueType&        GetValue();
 
         [[nodiscard]] bool              IsValid()  const;
+        [[nodiscard]] bool              IsEmpty()  const;
         [[nodiscard]] explicit operator bool()     const;
         [[nodiscard]] EOptionalState    GetState() const;
 
@@ -121,6 +122,12 @@ namespace Oggle
     bool Optional<ValueType>::IsValid() const
     {
         return State == EOptionalState::Valid;
+    }
+
+    template<typename ValueType>
+    bool Optional<ValueType>::IsEmpty() const
+    {
+        return State == EOptionalState::Empty;
     }
 
     template<typename ValueType>
