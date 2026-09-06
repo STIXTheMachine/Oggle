@@ -69,5 +69,5 @@ void Oggle::Private::Assert::EnsureImpl(AssertInfo& Info)
         );
     }
 
-    LOG(Assert, FMT("{}\nThis is NOT a fatal error; program execution will continue.", ErrorMessage));
+    LOG(Ensure, FMT("{}\nThis is NOT a fatal error; program execution will continue.", ErrorMessage));
 }

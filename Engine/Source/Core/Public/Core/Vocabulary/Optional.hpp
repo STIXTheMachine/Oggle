@@ -14,23 +14,29 @@ namespace Oggle
     struct Optional
     {
         Optional() = default;
-        Optional(const ValueType& Value);
-        Optional(ValueType&& Value);
+
+        template<typename Arg>
+        requires (!std::is_same_v<std::remove_cvref_t<Arg>, Optional> && std::constructible_from<ValueType, Arg>)
+        Optional(Arg&&);
+
+        template<typename... Args>
+        requires (std::constructible_from<ValueType, Args...>)
+        Optional(Args&&...);
 
         Optional(const Optional&);
         Optional& operator=(const Optional&);
 
-        template<typename ValueTypeFwd>
-        Optional& operator=(ValueTypeFwd&&);
-
         Optional(Optional&&);
         Optional& operator=(Optional&&);
 
-        template<typename ValueTypeFwd>
-        void SetValue(ValueTypeFwd&& Value);
+        template<typename Arg>
+        void SetValue(Arg&& Value);
 
-        [[nodiscard]] const ValueType&  GetValue() const;
-        [[nodiscard]] ValueType&        GetValue();
+        [[nodiscard]] const ValueType&  GetValue() const &;
+        [[nodiscard]] ValueType&        GetValue() &;
+
+        [[nodiscard]] const ValueType&&  GetValue() const &&;
+        [[nodiscard]] ValueType&&        GetValue() &&;
 
         [[nodiscard]] bool              IsValid()  const;
         [[nodiscard]] bool              IsEmpty()  const;
@@ -49,10 +55,22 @@ namespace Oggle
     };
 
     template<typename ValueType>
-    Optional<ValueType>::Optional(const ValueType& Value) : InternalValue(Value), State(EOptionalState::Valid) {}
+    template<typename Arg>
+        requires (!std::is_same_v<std::remove_cvref_t<Arg>, Optional<ValueType>> && std::constructible_from<ValueType, Arg>)
+    Optional<ValueType>::Optional(Arg&& Value)
+    {
+        InternalValue = ValueType { std::forward<Arg>(Value) };
+        State = EOptionalState::Valid;
+    }
 
     template<typename ValueType>
-    Optional<ValueType>::Optional(ValueType&& Value) : InternalValue(std::move(Value)), State(EOptionalState::Valid) {}
+    template<typename ... Args>
+        requires (std::constructible_from<ValueType, Args...>)
+    Optional<ValueType>::Optional(Args&&... InArgs)
+    {
+        InternalValue = ValueType { std::forward<Args>(InArgs)... };
+        State = EOptionalState::Valid;
+    }
 
     template<typename ValueType>
     Optional<ValueType>::Optional(const Optional& Other)
@@ -76,13 +94,6 @@ namespace Oggle
         }
 
         return *this;
-    }
-
-    template<typename ValueType>
-    template<typename ValueTypeFwd>
-    Optional<ValueType>& Optional<ValueType>::operator=(ValueTypeFwd&& InValue)
-    {
-        SetValue(std::forward<ValueTypeFwd>(InValue));
     }
 
     template<typename ValueType>
@@ -110,25 +121,39 @@ namespace Oggle
     }
 
     template<typename ValueType>
-    template<typename ValueTypeFwd>
-    void Optional<ValueType>::SetValue(ValueTypeFwd&& Value)
+    template<typename Arg>
+    void Optional<ValueType>::SetValue(Arg&& Value)
     {
-        InternalValue = std::forward<ValueTypeFwd>(Value);
+        InternalValue = std::forward<Arg>(Value);
         State = EOptionalState::Valid;
     }
 
     template<typename ValueType>
-    const ValueType& Optional<ValueType>::GetValue() const
+    const ValueType& Optional<ValueType>::GetValue() const &
     {
         OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
         return InternalValue;
     }
 
     template<typename ValueType>
-    ValueType& Optional<ValueType>::GetValue()
+    ValueType& Optional<ValueType>::GetValue() &
     {
         OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
-        return {};
+        return InternalValue;
+    }
+
+    template<typename ValueType>
+    const ValueType&& Optional<ValueType>::GetValue() const &&
+    {
+        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        return std::move(InternalValue);
+    }
+
+    template<typename ValueType>
+    ValueType&& Optional<ValueType>::GetValue() &&
+    {
+        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        return std::move(InternalValue);
     }
 
     template<typename ValueType>

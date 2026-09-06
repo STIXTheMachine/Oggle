@@ -7,7 +7,6 @@ add_library(${MODULE} OBJECT
         Vocabulary/Optional.test.cpp
         Math/Color.test.cpp
 )
-
 target_link_libraries(${MODULE} PRIVATE Oggle::Testing)
 target_link_libraries(${MODULE} PRIVATE Oggle::Core)
 

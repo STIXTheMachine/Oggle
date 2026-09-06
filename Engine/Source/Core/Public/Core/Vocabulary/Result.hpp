@@ -37,6 +37,14 @@ namespace Oggle
         // Coerces to bool as a convenience
         explicit operator bool() const { return IsValid(); }
 
+        template <typename Arg>
+        requires(std::same_as<std::remove_cvref_t<Arg>, std::remove_cvref_t<ValueType>>)
+        Result& operator=(Arg&&);
+
+        template <typename Arg>
+        requires(std::same_as<std::remove_cvref_t<Arg>, std::remove_cvref_t<ErrorType>>)
+        Result& operator=(Arg&&);
+
         // Query the state of the Result
         [[nodiscard]] EResultState GetState() const;
         [[nodiscard]] bool         IsEmpty()  const;

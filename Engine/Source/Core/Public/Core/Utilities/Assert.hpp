@@ -2,7 +2,8 @@
 #include <Core/Logging/Logging.hpp>
 #include <source_location>
 #include <stacktrace>
-DECLARE_LOG_CATEGORY(Assert, Warning, Warning, Default);
+DECLARE_LOG_CATEGORY(Assert, Fatal, Warning, Default);
+DECLARE_LOG_CATEGORY(Ensure, Warning, Warning, Default);
 
 #if defined(OGGLE_ENABLE_ASSERTS)
 namespace Oggle::Private::Assert
