@@ -1,25 +1,9 @@
 #pragma once
-#include "CoreMinimal.hpp"
+#include "StringView.hpp"
 #include <format>
 
 namespace Oggle
 {
-    struct StringView final
-    {
-        using Char = char;
-        StringView() = default;
-        StringView(const Char* Str);
-
-        [[nodiscard]] const Char* Data() const;
-        [[nodiscard]] size_t Size() const;
-
-    private:
-         const Char* Buffer;
-        size_t Length;
-    };
-
-    std::ostream& operator<<(std::ostream& Stream, StringView View);
-
     struct String final
     {
         using Char = char;
@@ -41,6 +25,13 @@ namespace Oggle
         String& operator=(const String& Other);
         String& operator=(String&& Other);
 
+        String& operator+=(const Char* String);
+        String& operator+=(const String& Other);
+        String& operator+=(StringView Other);
+
+        String(StringView View);
+        String& operator=(StringView View);
+
         /// Sets Capacity to be at least NumChars characters, reallocating if necessary.
         void Reserve(size_t NumChars);
 
@@ -61,46 +52,40 @@ namespace Oggle
 
         [[nodiscard]] bool IsSmallString() const;
 
+        // Allocates a new heap buffer of size 2 * m_Capacity and then copies the existing buffer into it
         void DoubleCapacity();
 
-        struct HeapString
+        struct HeapBuffer
         {
-            Char* HeapBuffer  {};
-            size_t Length {};
+            Char* Buf  {};
+            size_t Length {}; // Includes null byte
         };
 
-        static constexpr size_t SmallStringCapacity = (sizeof(HeapString) / sizeof(Char)) - 1;
+        // Includes space for the null terminator
+        static constexpr size_t SmallStringBufSize = (sizeof(HeapBuffer) / sizeof(Char));
 
-        struct StackString
+        struct StackBuffer
         {
-            Char StackBuffer[SmallStringCapacity] {};
-            const Char Hardstop = '\0';
+            Char Buf[SmallStringBufSize] {}; // Includes null byte
         };
 
         union Memory
         {
-            StackString Stack {};
-            HeapString Heap;
+            StackBuffer Stack {};
+            HeapBuffer Heap;
         } Rep;
 
         size_t m_Capacity;
     };
 
-    std::ostream& operator<<(std::ostream& Stream, const String& String);
 }
+
+std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String);
 
 template<>
 struct std::formatter<Oggle::String> : std::formatter<const char*> {
     auto format(Oggle::String& Str, auto& Ctx) const
     {
         return std::formatter<const char*>::format(Str.CStr(), Ctx);
-    }
-};
-
-template<>
-struct std::formatter<Oggle::StringView> : std::formatter<const char*> {
-    auto format(Oggle::StringView& Str, auto& Ctx) const
-    {
-        return std::formatter<const char*>::format(Str.Data(), Ctx);
     }
 };

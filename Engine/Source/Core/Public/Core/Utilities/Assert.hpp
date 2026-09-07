@@ -21,7 +21,7 @@ namespace Oggle::Private::Assert
 }
 
 
-#define OGGLE_ASSERT_MSG(Condition, Message) \
+#define OGGLE_ASSERT_2_ARGS(Condition, Message) \
 { \
     if (!(Condition)) \
     { \
@@ -29,10 +29,16 @@ namespace Oggle::Private::Assert
         Oggle::Private::Assert::AssertImpl(Info); \
     } \
 }
-#define OGGLE_ASSERT(Condition) OGGLE_ASSERT_MSG(Condition, "")
+
+#define OGGLE_ASSERT_1_ARG(Condition) OGGLE_ASSERT_2_ARGS(Condition, "")
+
+#define OGGLE_DISPATCH_ASSERT(_1, _2, NUM_ARGS, ...) NUM_ARGS
+
+#define OGGLE_ASSERT(...) OGGLE_DISPATCH_ASSERT(__VA_ARGS__, OGGLE_ASSERT_2_ARGS, OGGLE_ASSERT_1_ARG)(__VA_ARGS__)
 
 
-#define OGGLE_ENSURE_MSG(Condition, Message) \
+
+#define OGGLE_ENSURE_2_ARGS(Condition, Message) \
 { \
     if (!(Condition)) \
     { \
@@ -40,7 +46,12 @@ namespace Oggle::Private::Assert
         Oggle::Private::Assert::EnsureImpl(Info); \
     } \
 }
-#define OGGLE_ENSURE(Condition) OGGLE_ENSURE_MSG(Condition, "")
+
+#define OGGLE_ENSURE_1_ARG(Condition) OGGLE_ENSURE_2_ARGS(Condition, "")
+
+#define OGGLE_DISPATCH_ENSURE(_1, _2, NUM_ARGS, ...) NUM_ARGS
+
+#define OGGLE_ENSURE(...) OGGLE_DISPATCH_ENSURE(__VA_ARGS__, OGGLE_ENSURE_2_ARGS, OGGLE_ENSURE_1_ARG)(__VA_ARGS__)
 
 
 #else

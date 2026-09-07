@@ -255,7 +255,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     ValueType& Result<ValueType, ErrorType>::GetValue()
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
         return GetValueUnchecked();
     }
 
@@ -263,7 +263,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     const ValueType& Result<ValueType, ErrorType>::GetValue() const
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(), "Attempting to call Result::GetValue() when IsValid() is false");
         return GetValueUnchecked();
     }
 
@@ -277,7 +277,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     ValueType Result<ValueType, ErrorType>::TakeValue()
     {
-        OGGLE_ASSERT_MSG(IsValid(), "Attempting to call Result::TakeValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(), "Attempting to call Result::TakeValue() when IsValid() is false");
         return std::move(GetValueUnchecked());
     }
 
@@ -285,7 +285,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     ErrorType& Result<ValueType, ErrorType>::GetError()
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false");
+        OGGLE_ASSERT(IsError(), "Attempting to call Result::GetError() when IsError() is false");
         return GetErrorUnchecked();
     }
 
@@ -293,7 +293,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     const ErrorType& Result<ValueType, ErrorType>::GetError() const
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::GetError() when IsError() is false");
+        OGGLE_ASSERT(IsError(), "Attempting to call Result::GetError() when IsError() is false");
         return GetErrorUnchecked();
     }
 
@@ -307,7 +307,7 @@ namespace Oggle
         requires(!std::same_as<std::remove_cvref_t<ValueType>, std::remove_cvref_t<ErrorType>>)
     ErrorType Result<ValueType, ErrorType>::TakeError()
     {
-        OGGLE_ASSERT_MSG(IsError(), "Attempting to call Result::TakeError() when IsError() is false");
+        OGGLE_ASSERT(IsError(), "Attempting to call Result::TakeError() when IsError() is false");
         return std::move(GetErrorUnchecked());
     }
 

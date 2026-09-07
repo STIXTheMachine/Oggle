@@ -10,7 +10,8 @@ add_library(${MODULE}
         Private/Utilities/Assert.cpp
         Public/Core/Utilities/MemoryUtils.hpp
         Private/Logging/Logging.cpp
-        Private/String.cpp
+        Private/Container/String.cpp
+        Private/Container/StringView.cpp
 )
 
 target_include_directories(${MODULE} PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}/Public")

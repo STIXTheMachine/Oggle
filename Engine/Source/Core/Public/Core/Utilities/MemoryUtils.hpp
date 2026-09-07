@@ -1,5 +1,5 @@
 #pragma once
-#include "Core/Vocabulary/OggleType.hpp"
+#include "Core/Vocabulary/PrimitiveTypes.hpp"
 
 namespace Oggle
 {

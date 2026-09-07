@@ -1,14 +1,11 @@
 #include "CoreMinimal.hpp"
+#include <debugging>
 
 using namespace Oggle;
 
-void stop() {};
-
 int main()
 {
-    String MyString { "WOOOOOOO YEAH THIS IS MY OWN STRING CLASS." };
-
-    stop();
-
-    std::cout << std::format("Hello, {}", MyString.View() ) << std::endl;
+    std::string Foo { "Error Message" };
+    OGGLE_ENSURE(false && true);
+    OGGLE_ENSURE(false && true, Foo);
 }

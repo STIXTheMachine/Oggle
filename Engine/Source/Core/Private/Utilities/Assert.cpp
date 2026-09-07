@@ -1,6 +1,59 @@
 #include "Core/Utilities/Assert.hpp"
 #include <sstream>
 
+
+static std::string GetCheckedExpression(std::source_location& Location)
+{
+    // Find the opening parenthesis of OGGLE_ASSERT() or OGGLE_ENSURE() (or their _MSG counterparts)
+
+    std::string SourceFile;
+
+    {
+        std::ifstream SourceFileStream { Location.file_name() };
+        SourceFile = std::string { std::istreambuf_iterator(SourceFileStream), {} };
+    }
+
+    std::string ErrorLine;
+    size_t ErrorLineNumber = Location.line();
+
+    size_t ErrorLineStartPos = 0;
+
+    while (--ErrorLineNumber)
+    {
+        ErrorLineStartPos = SourceFile.find('\n', ErrorLineStartPos + 1);
+    }
+
+    size_t ErrorLineEndPos = SourceFile.find('\n', ErrorLineStartPos + 1);
+    ErrorLine = SourceFile.substr(ErrorLineStartPos, ErrorLineEndPos - ErrorLineStartPos);
+
+    size_t MacroBeginPos = SourceFile.find("OGGLE_", ErrorLineStartPos);
+    size_t MacroOpenParenPos = SourceFile.find('(', MacroBeginPos + 1);
+    size_t MacroCloseParenPos = MacroOpenParenPos + 1;
+
+    size_t NumOpenParens = 1;
+    for (auto It = SourceFile.begin() + MacroOpenParenPos + 1; It != SourceFile.end(); ++It)
+    {
+        MacroCloseParenPos++;
+        if (*It == '(') ++NumOpenParens;
+        else if (*It == ')') --NumOpenParens;
+
+        if (NumOpenParens == 0) break;
+    }
+
+    size_t ConditionLength = MacroCloseParenPos - MacroOpenParenPos;
+
+    std::string_view MacroArgs  { SourceFile.begin() + MacroOpenParenPos + 1, SourceFile.begin() + MacroCloseParenPos - 1 };
+    std::string_view Expression = MacroArgs;
+
+    if (MacroArgs.contains(','))
+    {
+        size_t CommaPos = Expression.find(',');
+        Expression = { MacroArgs.begin(), MacroArgs.begin() + CommaPos };
+    }
+
+    return std::string { Expression };
+}
+
 static std::string CleanCallstack(std::stacktrace& Stack)
 {
     std::ostringstream CallStack;
@@ -20,7 +73,8 @@ void Oggle::Private::Assert::AssertImpl(AssertInfo& Info)
     if (Info.ErrorMessage.empty())
     {
         ErrorMessage = std::format(
-            "Assert failed at {}:{}:{}\nCallstack:\n{}",
+            "Assertion '{}' failed at {}:{}:{}\nCallstack:\n{}",
+            GetCheckedExpression(Info.Location),
             Info.Location.file_name(),
             Info.Location.line(),
             Info.Location.column(),
@@ -30,11 +84,12 @@ void Oggle::Private::Assert::AssertImpl(AssertInfo& Info)
     else
     {
         ErrorMessage = std::format(
-            "Assert '{}' failed at {}:{}:{}\nCallstack:\n{}",
-            Info.ErrorMessage,
+            "Ensure expression '{}' failed at {}:{}:{}\nError Message: {}\nCallstack:\n{}",
+            GetCheckedExpression(Info.Location),
             Info.Location.file_name(),
             Info.Location.line(),
             Info.Location.column(),
+            Info.ErrorMessage,
             Info.Stacktrace
         );
     }
@@ -50,7 +105,8 @@ void Oggle::Private::Assert::EnsureImpl(AssertInfo& Info)
     if (Info.ErrorMessage.empty())
     {
         ErrorMessage = std::format(
-            "Ensure failed at {}:{}:{}\nCallstack:\n{}",
+            "Ensure expression '{}' failed at {}:{}:{}\nCallstack:\n{}",
+            GetCheckedExpression(Info.Location),
             Info.Location.file_name(),
             Info.Location.line(),
             Info.Location.column(),
@@ -60,11 +116,12 @@ void Oggle::Private::Assert::EnsureImpl(AssertInfo& Info)
     else
     {
         ErrorMessage = std::format(
-            "Ensure '{}' failed at {}:{}:{}\nCallstack:\n{}",
-            Info.ErrorMessage,
+            "Ensure expression '{}' failed at {}:{}:{}\nError Message: {}\nCallstack:\n{}",
+            GetCheckedExpression(Info.Location),
             Info.Location.file_name(),
             Info.Location.line(),
             Info.Location.column(),
+            Info.ErrorMessage,
             Info.Stacktrace
         );
     }
