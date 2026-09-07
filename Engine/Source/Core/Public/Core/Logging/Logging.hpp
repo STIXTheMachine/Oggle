@@ -140,17 +140,19 @@ namespace Oggle::LOG_CATEGORY_NAME(CategoryName) \
 
 #define FMT(...) std::format(__VA_ARGS__)
 
-#define LOG_1(LogString) Oggle::Private::LogImpl(Oggle::LogDefault::Name, Oggle::LogDefault::VerbosityMask, Oggle::LogDefault::EnabledSinks, Oggle::LogDefault::GetFileSink(), Oggle::LogDefault::DefaultMessageVerbosity, LogString)
+#define OGGLE_LOG_1(LogString) Oggle::Private::LogImpl(Oggle::LogDefault::Name, Oggle::LogDefault::VerbosityMask, Oggle::LogDefault::EnabledSinks, Oggle::LogDefault::GetFileSink(), Oggle::LogDefault::DefaultMessageVerbosity, LogString)
 
-#define LOG_2(Category, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::LOG_CATEGORY_NAME(Category)::GetFileSink(), Oggle::LOG_CATEGORY_NAME(Category)::DefaultMessageVerbosity, Message)
+#define OGGLE_LOG_2(Category, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::LOG_CATEGORY_NAME(Category)::GetFileSink(), Oggle::LOG_CATEGORY_NAME(Category)::DefaultMessageVerbosity, Message)
 
-#define LOG_3(Category, MessageVerbosity, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::LOG_CATEGORY_NAME(Category)::GetFileSink(), Oggle::ELogVerbosity::MessageVerbosity, Message)
+#define OGGLE_LOG_3(Category, MessageVerbosity, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::LOG_CATEGORY_NAME(Category)::GetFileSink(), Oggle::ELogVerbosity::MessageVerbosity, Message)
 
-#define LOG_4(Category, MessageVerbosity, OverrideSinks, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::ELogSinks::OverrideSinks, Oggle::ELogVerbosity::MessageVerbosity, Message)
+#define OGGLE_LOG_4(Category, MessageVerbosity, OverrideSinks, Message) Oggle::Private::LogImpl(Oggle::LOG_CATEGORY_NAME(Category)::Name, Oggle::LOG_CATEGORY_NAME(Category)::VerbosityMask, Oggle::LOG_CATEGORY_NAME(Category)::EnabledSinks, Oggle::ELogSinks::OverrideSinks, Oggle::ELogVerbosity::MessageVerbosity, Message)
 
 #define DISPATCH_LOG(_1, _2, _3, _4, NUM_ARGS, ...) NUM_ARGS
 
-#define LOG(...) DISPATCH_LOG(__VA_ARGS__, LOG_4, LOG_3, LOG_2, LOG_1)(__VA_ARGS__)
+#define LOG(...) DISPATCH_LOG(__VA_ARGS__, OGGLE_LOG_4, OGGLE_LOG_3, OGGLE_LOG_2, OGGLE_LOG_1)(__VA_ARGS__)
+
+#define LOGFMT(Category, MessageVebosity, FormatString, ...)  OGGLE_LOG_3(Category, MessageVebosity, FMT(FormatString, __VA_ARGS__))
 
 namespace Private // Oggle::Private
 {
