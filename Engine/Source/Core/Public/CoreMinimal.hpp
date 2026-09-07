@@ -6,3 +6,4 @@
 #include "Core/Vocabulary/Optional.hpp"
 #include "Core/Vocabulary/Result.hpp"
 #include "Core/Vocabulary/SmartPointer.hpp"
+#include "Core/Container/String.hpp"
