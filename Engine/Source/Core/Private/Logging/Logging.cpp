@@ -39,6 +39,7 @@ namespace Oggle::Private {
     {
         if (Message.empty())
         {
+            Output = Header;
             return;
         }
         if (Header.empty())

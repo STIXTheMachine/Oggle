@@ -3,7 +3,7 @@
 #if defined(OGGLE_ENABLE_LOGGING)
 #include <utility>
 #include <Core/Utilities/Bitflags.hpp>
-#include <Core/Vocabulary/OggleType.hpp>
+#include <Core/Vocabulary/PrimitiveTypes.hpp>
 #include <Core/Logging/Sinks.hpp>
 #include <format>
 
