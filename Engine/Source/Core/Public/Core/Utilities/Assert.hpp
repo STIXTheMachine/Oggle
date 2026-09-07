@@ -23,7 +23,7 @@ namespace Oggle::Private::Assert
 
 #define OGGLE_ASSERT_MSG(Condition, Message) \
 { \
-    if (!Condition) \
+    if (!(Condition)) \
     { \
         Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
         Oggle::Private::Assert::AssertImpl(Info); \
@@ -34,7 +34,7 @@ namespace Oggle::Private::Assert
 
 #define OGGLE_ENSURE_MSG(Condition, Message) \
 { \
-    if (!Condition) \
+    if (!(Condition)) \
     { \
         Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
         Oggle::Private::Assert::EnsureImpl(Info); \
