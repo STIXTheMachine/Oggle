@@ -1,6 +1,4 @@
 #include "CoreMinimal.hpp"
-#include <string>
-#include <print>
 
 using namespace Oggle;
 
@@ -12,5 +10,5 @@ int main()
 
     stop();
 
-    std::cout << MyString << std::endl;
+    std::cout << std::format("Hello, {}", MyString.View() ) << std::endl;
 }

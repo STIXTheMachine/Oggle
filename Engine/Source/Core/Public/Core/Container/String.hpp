@@ -1,8 +1,25 @@
 #pragma once
 #include "CoreMinimal.hpp"
+#include <format>
 
 namespace Oggle
 {
+    struct StringView final
+    {
+        using Char = char;
+        StringView() = default;
+        StringView(const Char* Str);
+
+        [[nodiscard]] const Char* Data() const;
+        [[nodiscard]] size_t Size() const;
+
+    private:
+         const Char* Buffer;
+        size_t Length;
+    };
+
+    std::ostream& operator<<(std::ostream& Stream, StringView View);
+
     struct String final
     {
         using Char = char;
@@ -27,11 +44,15 @@ namespace Oggle
         /// Sets Capacity to be at least NumChars characters, reallocating if necessary.
         void Reserve(size_t NumChars);
 
-        /// Get string contents as a regular C string
-        const char* CStr() const;
+        StringView View();
 
-        size_t GetLength() const;
-        size_t GetCapacity() const;
+        /// Get string contents as a regular C string
+        [[nodiscard]] const Char* CStr() const;
+
+        Char* Data();
+
+        [[nodiscard]] size_t Size() const;
+        [[nodiscard]] size_t Capacity() const;
 
     private:
         // Allocate space for NumChars characters plus a null terminator
@@ -62,8 +83,24 @@ namespace Oggle
             HeapString Heap;
         } Rep;
 
-        size_t Capacity;
+        size_t m_Capacity;
     };
 
     std::ostream& operator<<(std::ostream& Stream, const String& String);
 }
+
+template<>
+struct std::formatter<Oggle::String> : std::formatter<const char*> {
+    auto format(Oggle::String& Str, auto& Ctx) const
+    {
+        return std::formatter<const char*>::format(Str.CStr(), Ctx);
+    }
+};
+
+template<>
+struct std::formatter<Oggle::StringView> : std::formatter<const char*> {
+    auto format(Oggle::StringView& Str, auto& Ctx) const
+    {
+        return std::formatter<const char*>::format(Str.Data(), Ctx);
+    }
+};

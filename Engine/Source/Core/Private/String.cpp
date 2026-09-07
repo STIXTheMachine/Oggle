@@ -3,10 +3,31 @@
 
 namespace Oggle
 {
+StringView::StringView(const Char* Str)
+{
+    Buffer = Str;
+    Length = strlen(Str);
+}
+
+const StringView::Char* StringView::Data() const
+{
+    return Buffer;
+}
+
+size_t StringView::Size() const
+{
+    return Length;
+}
+
+std::ostream& operator<<(std::ostream& Stream, StringView View)
+{
+    return Stream << View.Data();
+}
+
 String::String()
 {
     std::construct_at(&Rep.Stack);
-    Capacity = SmallStringCapacity;
+    m_Capacity = SmallStringCapacity;
 }
 
 String::String(size_t NumChars)
@@ -14,12 +35,12 @@ String::String(size_t NumChars)
     if (NumChars <= SmallStringCapacity)
     {
         std::construct_at(&Rep.Stack);
-        Capacity = SmallStringCapacity;
+        m_Capacity = SmallStringCapacity;
     }
     else
     {
         std::construct_at(&Rep.Heap, Allocate(NumChars), 0);
-        Capacity = NumChars;
+        m_Capacity = NumChars;
     }
 }
 
@@ -29,13 +50,13 @@ String::String(size_t NumChars, Char Fill) : String(NumChars)
     {
         std::construct_at(&Rep.Stack);
         memset(Rep.Stack.StackBuffer, Fill, NumChars);
-        Capacity = SmallStringCapacity;
+        m_Capacity = SmallStringCapacity;
     }
     else
     {
         std::construct_at(&Rep.Heap, Allocate(NumChars), NumChars);
         memset(Rep.Heap.HeapBuffer, Fill, NumChars);
-        Capacity = NumChars;
+        m_Capacity = NumChars;
     }
 }
 
@@ -45,13 +66,13 @@ String::String(const char* String)
     {
         std::construct_at(&Rep.Stack);
         strncpy(Rep.Stack.StackBuffer, String, Length);
-        Capacity = SmallStringCapacity;
+        m_Capacity = SmallStringCapacity;
     }
     else
     {
         std::construct_at(&Rep.Heap, Allocate(Length), Length);
         strncpy(Rep.Heap.HeapBuffer, String, Length);
-        Capacity = Length;
+        m_Capacity = Length;
     }
 }
 
@@ -60,13 +81,13 @@ String::String(const String& Other)
     if (Other.IsSmallString())
     {
         std::construct_at(&Rep.Stack, Other.Rep.Stack);
-        Capacity = SmallStringCapacity;
+        m_Capacity = SmallStringCapacity;
     }
     else
     {
         std::construct_at(&Rep.Heap, Allocate(Other.Rep.Heap.Length), Other.Rep.Heap.Length);
         strncpy(Rep.Heap.HeapBuffer, Other.Rep.Heap.HeapBuffer, Other.Rep.Heap.Length);
-        Capacity = Other.Capacity;
+        m_Capacity = Other.m_Capacity;
     }
 }
 
@@ -75,12 +96,12 @@ String::String(String&& Other)
     if (Other.IsSmallString())
     {
         std::construct_at(&Rep.Stack, Other.Rep.Stack);
-        Capacity = SmallStringCapacity;
+        m_Capacity = SmallStringCapacity;
     }
     else
     {
         std::construct_at(&Rep.Heap, Other.Rep.Heap);
-        Capacity = Other.Capacity;
+        m_Capacity = Other.m_Capacity;
         Other    = String {};
     }
 }
@@ -107,7 +128,7 @@ String& String::operator=(const String& Other)
     {
         std::construct_at(&Rep.Heap, Allocate(Other.Rep.Heap.Length), Other.Rep.Heap.Length);
         strncpy(Rep.Heap.HeapBuffer, Other.Rep.Heap.HeapBuffer, Other.Rep.Heap.Length);
-        Capacity = Other.Capacity;
+        m_Capacity = Other.m_Capacity;
     }
 
     return *this;
@@ -134,11 +155,26 @@ String& String::operator=(String&& Other)
     else
     {
         std::construct_at(&Rep.Heap, Other.Rep.Heap);
-        Capacity = Other.Capacity;
+        m_Capacity = Other.m_Capacity;
         Other    = String {};
     }
 
     return *this;
+}
+
+void String::Reserve(size_t NumChars)
+{
+    if (NumChars < m_Capacity)
+    {
+
+    }
+}
+
+StringView String::View()
+{
+    if (IsSmallString()) return StringView { Rep.Stack.StackBuffer };
+
+    return StringView { Rep.Heap.HeapBuffer };
 }
 
 const char* String::CStr() const
@@ -148,7 +184,19 @@ const char* String::CStr() const
     return Rep.Heap.HeapBuffer;
 }
 
-size_t String::GetLength() const
+String::Char* String::Data()
+{
+    if (IsSmallString())
+    {
+        return Rep.Stack.StackBuffer;
+    }
+    else
+    {
+        return Rep.Heap.HeapBuffer;
+    }
+}
+
+size_t String::Size() const
 {
     if (IsSmallString())
     {
@@ -158,10 +206,10 @@ size_t String::GetLength() const
     return Rep.Heap.Length;
 }
 
-size_t String::GetCapacity() const
+size_t String::Capacity() const
 {
-    OGGLE_ENSURE_MSG(Capacity >= SmallStringCapacity, "String::GetCapacity() reported a Capacity of less than SmallStringCapacity. This doesn't inherently break anything but it's weird that it happened.")
-    return Capacity;
+    OGGLE_ENSURE_MSG(m_Capacity >= SmallStringCapacity, "String::GetCapacity() reported a Capacity of less than SmallStringCapacity. This doesn't inherently break anything but it's weird that it happened.")
+    return m_Capacity;
 }
 
 String::Char* String::Allocate(size_t NumChars)
@@ -178,13 +226,13 @@ void String::Deallocate(Char* Buffer)
 
 bool String::IsSmallString() const
 {
-    return Capacity <= SmallStringCapacity;
+    return m_Capacity <= SmallStringCapacity;
 }
 
 void String::DoubleCapacity()
 {
     // Create new buffer
-    const size_t NewCapacity = 2 * Capacity;
+    const size_t NewCapacity = 2 * m_Capacity;
     Char*        NewBuffer   = Allocate(NewCapacity);
 
     strncpy(NewBuffer, Rep.Heap.HeapBuffer, Rep.Heap.Length);
@@ -193,7 +241,7 @@ void String::DoubleCapacity()
     delete[] Rep.Heap.HeapBuffer;
 
     Rep.Heap.HeapBuffer = NewBuffer;
-    Capacity        = NewCapacity;
+    m_Capacity        = NewCapacity;
 }
 
 std::ostream& operator<<(std::ostream& Stream, const String& String)
