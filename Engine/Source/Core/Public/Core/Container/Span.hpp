@@ -1,7 +1,6 @@
 #pragma once
 #include "Core/Vocabulary/Optional.hpp"
 
-
 namespace Oggle
 {
     template<typename T>
@@ -17,30 +16,30 @@ namespace Oggle
 
         /// @brief Create a view from an existing static array
         template<size_t N>
-        Span(T (&)[N]);
+        explicit Span(T (&)[N]);
 
         /// @brief Check if an index is within the bounds of the view
         /// @param Index Index to check
         /// @return boolean indicating whether Index corresponds to a valid element of the view
-        bool IsValidIndex(size_t Index) const;
+        [[nodiscard]] bool IsValidIndex(size_t Index) const;
 
         /// @brief Subscript operator
         /// @param Index element to attempt to access
         /// @return An optional object which contains a reference to the element at Index if Index is valid, empty otherwise
-        Optional<T&> operator[](size_t Index);
+        [[nodiscard]] Optional<T&> operator[](size_t Index);
 
         /// @brief Subscript operator
         /// @param Index element to attempt to access
         /// @return An optional object which contains a const reference to the element at Index if Index is valid, empty otherwise
-        Optional<const T&> operator[](size_t Index) const;
+        [[nodiscard]] Optional<const T&> operator[](size_t Index) const;
 
         /// @brief Get the number of objects held by the Span
         /// @return Number of objects
-        size_t Count() const;
+        [[nodiscard]] size_t Count() const;
 
         /// @brief Get a raw pointer to the data held by the Span
         /// @return Pointer to first element
-        T* Data() const;
+        [[nodiscard]] T* Data() const;
 
         using Iterator             =       T*;
         using ConstIterator        = const T*;
@@ -114,6 +113,16 @@ namespace Oggle
 
     template<typename T>
     Optional<T&> Span<T>::operator[](size_t Index)
+    {
+        if (IsValidIndex(Index))
+        {
+            return { m_Data[Index] };
+        }
+        return { };
+    }
+
+    template<typename T>
+    Optional<const T&> Span<T>::operator[](size_t Index) const
     {
         if (IsValidIndex(Index))
         {
