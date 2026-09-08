@@ -54,10 +54,9 @@ namespace Oggle
         String(StringView View);
         String& operator=(StringView View);
 
-        /// Sets Capacity to be at least NumChars characters, reallocating if necessary.
+        /// @brief Ensure that the String has room for at least NumChars characters, reallocating if necessary.
+        /// @param NumChars Desired new capacity
         void Reserve(size_t NumChars);
-
-        StringView View();
 
         /// Get string contents as a regular C string
         [[nodiscard]] const Char* CStr() const;
@@ -68,13 +67,17 @@ namespace Oggle
         [[nodiscard]] size_t Capacity() const;
 
     private:
-        // Allocate space for NumChars characters plus a null terminator
+        /// @brief Allocate a null-terminated buffer with space for a string of capacity NumChars
+        /// @param NumChars number of characters
+        /// @return Pointer to allocated buffer
         static Char* Allocate(size_t NumChars);
+
+        /// @brief Deallocate buffer previously allocated with String::Allocate
         static void Deallocate(Char*);
 
         [[nodiscard]] bool IsSmall() const;
 
-        // Allocates a new heap buffer of size 2 * m_Capacity and then copies the existing buffer into it
+        /// @brief Grow the string
         void IncreaseCapacity();
 
         struct HeapBuffer

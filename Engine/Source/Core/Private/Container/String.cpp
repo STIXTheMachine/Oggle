@@ -1,20 +1,37 @@
 #include "Container/String.hpp"
-
 #include <cstring>
 
 Oggle::String::String()
 {
-    OGGLE_UNIMPLEMENTED();
+    std::construct_at(&Rep.Stack);
+    m_Capacity = SmallStringCapacity;
 }
 
 Oggle::String::String(size_t NumChars)
 {
-    OGGLE_UNIMPLEMENTED();
+    if (NumChars <= SmallStringCapacity)
+    {
+        std::construct_at(&Rep.Stack);
+        m_Capacity = SmallStringCapacity;
+    }
+    else
+    {
+        auto Buffer = Allocate(NumChars);
+        std::construct_at(&Rep.Heap, Buffer, NumChars);
+    }
 }
 
-Oggle::String::String(size_t NumChars, Char Fill)
+Oggle::String::String(size_t NumChars, Char Fill) : String(NumChars)
 {
-    OGGLE_UNIMPLEMENTED();
+    if (IsSmall())
+    {
+        memset(Rep.Stack, Fill, SmallStringCapacity);
+        Rep.Stack[SmallStringCapacity] = '\0';
+    }
+    else
+    {
+
+    }
 }
 
 Oggle::String::String(const char* String)
@@ -79,12 +96,6 @@ Oggle::String& Oggle::String::operator=(StringView View)
     return *this;
 }
 
-Oggle::StringView Oggle::String::View()
-{
-    OGGLE_UNIMPLEMENTED();
-    return StringView {};
-}
-
 const Oggle::String::Char* Oggle::String::CStr() const
 {
     if (IsSmall()) return Rep.Stack;
@@ -115,6 +126,7 @@ Oggle::size_t Oggle::String::Capacity() const
 Oggle::String::Char* Oggle::String::Allocate(size_t NumChars)
 {
     const auto Buffer = new Char[NumChars + 1]; // Include space for a null terminator
+    Buffer[NumChars] = '\0';
     OGGLE_ASSERT(Buffer != nullptr);
     return Buffer;
 }
