@@ -12,6 +12,7 @@ add_library(${MODULE}
         Private/Logging/Logging.cpp
         Private/Container/String.cpp
         Private/Container/StringView.cpp
+        Public/Core/Vocabulary/PrimitiveTypes.hpp
 )
 
 target_include_directories(${MODULE} PUBLIC  "${CMAKE_CURRENT_SOURCE_DIR}/Public")
