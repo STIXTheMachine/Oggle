@@ -11,7 +11,6 @@ namespace Oggle
         /// @brief Default constructor
         String();
 
-
         /// @brief Create a string with space for NumChars characters. (Does not initialize underlying memory)
         /// @param NumChars Number of characters
         String(size_t NumChars);
@@ -64,16 +63,22 @@ namespace Oggle
 
         Char* Data();
 
-        [[nodiscard]] size_t Size() const;
+        [[nodiscard]] size_t Length() const;
         [[nodiscard]] size_t Capacity() const;
 
     private:
-        /// @brief Initialize the small string buffer. Make sure Memory::Heap is properly deconstructed prior to calling this.
-        void InitSmallStringBuffer();
+        /// @brief Initialize the small string buffer. Prior to calling this, make sure Memory::Heap is properly deconstructed, if necessary
+        void InitSmallString();
 
-        /// @brief Initialize the heap buffer. Make sure Memory::Stack is properly deconstructed before calling this.
-        /// @param NumChars Capacity of buffer to initialize
-        void InitHeapBuffer(size_t NumChars);
+        /// @brief Destroy the small string buffer
+        void DestroySmallString();
+
+        /// @brief Initialize the heap buffer. Prior to calling this, make sure Memory::Stack is properly deconstructed, if necessary
+        /// @param Capacity Capacity of buffer to initialize
+        void InitBigString(size_t Capacity);
+
+        /// @brief Destroy the heap buffer, freeing any memory it holds
+        void DestroyBigString();
 
         /// @brief Allocate a null-terminated buffer with space for a string of capacity NumChars
         /// @param NumChars number of characters
@@ -103,7 +108,7 @@ namespace Oggle
             Span<Char> Heap;
         } Rep;
 
-        size_t m_Capacity;
+        size_t m_Capacity { SmallStringCapacity };
     };
 
 }

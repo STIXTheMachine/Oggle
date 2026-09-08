@@ -3,33 +3,31 @@
 
 Oggle::String::String()
 {
-    InitSmallStringBuffer();
-    m_Capacity = SmallStringCapacity;
+    InitSmallString();
 }
 
 Oggle::String::String(size_t NumChars)
 {
     if (NumChars <= SmallStringCapacity)
     {
-        InitSmallStringBuffer();
-        m_Capacity = SmallStringCapacity;
+        InitSmallString();
     }
     else
     {
-        InitHeapBuffer(NumChars);
-        m_Capacity = NumChars;
+        InitBigString(NumChars);
     }
 }
 
 Oggle::String::String(size_t NumChars, Char Fill)
-    : String(NumChars)
 {
     if (IsSmall())
     {
+        InitSmallString();
         memset(Rep.Stack, Fill, SmallStringCapacity);
     }
     else
     {
+        InitBigString(NumChars);
         memset(Rep.Heap.Data(), Fill, NumChars);
     }
 }
@@ -40,31 +38,31 @@ Oggle::String::String(const char* String)
 
     if (Length <= SmallStringCapacity)
     {
-        InitSmallStringBuffer();
-        m_Capacity = SmallStringCapacity;
-        strlcpy(Rep.Stack, String, SmallStringBufSize);
+        InitSmallString();
+        strncpy(Rep.Stack, String, SmallStringCapacity);
     }
     else
     {
-        InitHeapBuffer(Length);
-        m_Capacity = Length;
-        strlcpy(Rep.Heap.Data(), String, Length + 1);
+        InitBigString(Length);
+        strncpy(Rep.Heap.Data(), String, Length);
     }
 }
 
 Oggle::String::String(const String& Other)
-    : String(Other.CStr())
 {
-
+    if (Other.IsSmall())
+    {
+        InitSmallString();
+        m_Capacity = SmallStringCapacity;
+    }
 }
 
 Oggle::String::String(String&& Other)
 {
     if (Other.IsSmall())
     {
-        InitSmallStringBuffer();
-        memcpy(&Rep.Stack, &Other.Rep.Stack, sizeof(Rep.Stack));
-        m_Capacity = SmallStringCapacity;
+        InitSmallString();
+        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
     }
     else
     {
@@ -76,13 +74,54 @@ Oggle::String::String(String&& Other)
 
 Oggle::String& Oggle::String::operator=(const String& Other)
 {
-    OGGLE_UNIMPLEMENTED();
+    if (this == &Other) return *this;
+
+    if (IsSmall())
+    {
+        DestroySmallString();
+    }
+    else {
+        DestroyBigString();
+    }
+
+    if (Other.IsSmall())
+    {
+        InitSmallString();
+        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
+    }
+    else
+    {
+        InitBigString(Other.Capacity());
+        strncpy(Rep.Heap.Data(), Other.Rep.Heap.Data(), Other.Capacity());
+    }
+
     return *this;
 }
 
 Oggle::String& Oggle::String::operator=(String&& Other)
 {
-    OGGLE_UNIMPLEMENTED();
+    if (this == &Other) return *this;
+
+    if (IsSmall())
+    {
+        DestroySmallString();
+    }
+    else {
+        DestroyBigString();
+    }
+
+    if (Other.IsSmall())
+    {
+        InitSmallString();
+        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
+    }
+    else
+    {
+        m_Capacity = Other.Capacity();
+        Rep.Heap = Other.Rep.Heap;
+        Other.Rep.Heap = {};
+    }
+
     return *this;
 }
 
@@ -94,7 +133,27 @@ Oggle::String& Oggle::String::operator+(const String& Rhs)
 
 Oggle::String& Oggle::String::operator+=(const Char* String)
 {
-    OGGLE_UNIMPLEMENTED();
+    const size_t InitialLength = Length();
+    const size_t ExtraLength = strlen(String);
+    const size_t RequiredCapacity = InitialLength + ExtraLength;
+
+    Reserve(RequiredCapacity);
+
+    if (IsSmall())
+    {
+        Char* CurrentStringEnd = Rep.Stack + Length(); // Points to null terminator of string in Rep.Stack
+        const size_t FreeBufferLength = SmallStringCapacity - InitialLength;
+        strncpy(CurrentStringEnd, String, FreeBufferLength);
+        Rep.Stack[RequiredCapacity] = '\0';
+    }
+    else
+    {
+        Char* CurrentStringEnd = Rep.Heap.Data() + Length(); // Points to null terminator
+        const size_t FreeBufferLength = Capacity() - InitialLength;
+        strncpy(CurrentStringEnd, String, FreeBufferLength);
+        //Rep.Heap[RequiredCapacity].GetValue() = '\0';
+    }
+
     return *this;
 }
 
@@ -135,7 +194,7 @@ Oggle::String::Char* Oggle::String::Data()
     return Rep.Heap.Data();
 }
 
-Oggle::size_t Oggle::String::Size() const
+Oggle::size_t Oggle::String::Length() const
 {
     if (IsSmall()) return strlen(Rep.Stack);
 
@@ -148,16 +207,29 @@ Oggle::size_t Oggle::String::Capacity() const
     return m_Capacity;
 }
 
-void Oggle::String::InitSmallStringBuffer() {
+void Oggle::String::InitSmallString() {
     std::construct_at(&Rep.Stack);
     Rep.Stack[SmallStringCapacity] = '\0';
+    m_Capacity = SmallStringCapacity;
 }
 
-void Oggle::String::InitHeapBuffer(size_t NumChars)
+void Oggle::String::DestroySmallString()
 {
-    auto Buffer = Allocate(NumChars);
-    Buffer[NumChars] = '\0';
-    std::construct_at(&Rep.Heap, Buffer, NumChars);
+    std::destroy_at(&Rep.Stack);
+}
+
+void Oggle::String::InitBigString(size_t Capacity)
+{
+    auto Buffer = Allocate(Capacity);
+    Buffer[Capacity] = '\0';
+    std::construct_at(&Rep.Heap, Buffer, 0);
+    m_Capacity = Capacity;
+}
+
+void Oggle::String::DestroyBigString()
+{
+    delete[] Rep.Heap.Data();
+    std::destroy_at(&Rep.Heap);
 }
 
 Oggle::String::Char* Oggle::String::Allocate(size_t NumChars)
@@ -189,27 +261,28 @@ void Oggle::String::Reserve(size_t NumChars)
         return;
     }
 
+    // Capacity() should never return anything less than SmallStringCapacity, so if we get here we for sure need to allocate
     Char* const NewBuffer = Allocate(NumChars);
+    const size_t CachedLength = Length();
 
     if (IsSmall())
     {
-        const size_t Length = strlen(Rep.Stack);
-        OGGLE_ENSURE(Length <= SmallStringCapacity);
         memcpy(NewBuffer, Rep.Stack, SmallStringCapacity);
-
-        std::destroy_at(&Rep.Stack); // *Technically* not necessary but something something UB
-        std::construct_at(&Rep.Heap, NewBuffer, Length);
+        DestroySmallString();
+        Rep.Heap = Span { NewBuffer, CachedLength };
     }
     else
     {
-        const size_t Length = Rep.Heap.Count();
-        const Char* OldBuffer = Rep.Heap.Data();
-
-        memcpy(NewBuffer, OldBuffer, Length);
+        const Char*  OldBuffer    = Rep.Heap.Data();
+        memcpy(NewBuffer, Rep.Heap.Data(), CachedLength);
         delete[] OldBuffer;
-
-        Rep.Heap = Span { NewBuffer, Length };
+        Rep.Heap = Span { NewBuffer, CachedLength };
     }
 
     m_Capacity = NumChars;
+}
+
+std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String)
+{
+    return Stream << String.CStr();
 }
