@@ -23,15 +23,17 @@ namespace Oggle
         /// @return boolean indicating whether Index corresponds to a valid element of the view
         [[nodiscard]] bool IsValidIndex(size_t Index) const;
 
+        // TODO: Optional<T> support
         /// @brief Subscript operator
         /// @param Index element to attempt to access
         /// @return An optional object which contains a reference to the element at Index if Index is valid, empty otherwise
-        [[nodiscard]] Optional<T&> operator[](size_t Index);
+        //[[nodiscard]] Optional<T&> operator[](size_t Index);
 
+        // TODO: Optional<T> support
         /// @brief Subscript operator
         /// @param Index element to attempt to access
         /// @return An optional object which contains a const reference to the element at Index if Index is valid, empty otherwise
-        [[nodiscard]] Optional<const T&> operator[](size_t Index) const;
+        //[[nodiscard]] Optional<const T&> operator[](size_t Index) const;
 
         /// @brief Get the number of objects held by the Span
         /// @return Number of objects
@@ -95,25 +97,26 @@ namespace Oggle
         return Index < m_Count;
     }
 
-    template<typename T>
-    Optional<T&> Span<T>::operator[](size_t Index)
-    {
-        if (IsValidIndex(Index))
-        {
-            return { m_Data[Index] };
-        }
-        return { };
-    }
-
-    template<typename T>
-    Optional<const T&> Span<T>::operator[](size_t Index) const
-    {
-        if (IsValidIndex(Index))
-        {
-            return { m_Data[Index] };
-        }
-        return { };
-    }
+    // template<typename T>
+    // Optional<T&> Span<T>::operator[](size_t Index)
+    // {
+    //     if (IsValidIndex(Index))
+    //     {
+    //         return { m_Data[Index] };
+    //     }
+    //
+    //     return { };
+    // }
+    //
+    // template<typename T>
+    // Optional<const T&> Span<T>::operator[](size_t Index) const
+    // {
+    //     if (IsValidIndex(Index))
+    //     {
+    //         return { m_Data[Index] };
+    //     }
+    //     return { };
+    // }
 
     template <typename T>
     size_t Span<T>::Count() const
