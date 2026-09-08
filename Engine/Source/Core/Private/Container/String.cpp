@@ -3,7 +3,7 @@
 
 Oggle::String::String()
 {
-    std::construct_at(&Rep.Stack);
+    InitSmallStringBuffer();
     m_Capacity = SmallStringCapacity;
 }
 
@@ -11,42 +11,67 @@ Oggle::String::String(size_t NumChars)
 {
     if (NumChars <= SmallStringCapacity)
     {
-        std::construct_at(&Rep.Stack);
+        InitSmallStringBuffer();
         m_Capacity = SmallStringCapacity;
     }
     else
     {
-        auto Buffer = Allocate(NumChars);
-        std::construct_at(&Rep.Heap, Buffer, NumChars);
+        InitHeapBuffer(NumChars);
+        m_Capacity = NumChars;
     }
 }
 
-Oggle::String::String(size_t NumChars, Char Fill) : String(NumChars)
+Oggle::String::String(size_t NumChars, Char Fill)
+    : String(NumChars)
 {
     if (IsSmall())
     {
         memset(Rep.Stack, Fill, SmallStringCapacity);
-        Rep.Stack[SmallStringCapacity] = '\0';
     }
     else
     {
-
+        memset(Rep.Heap.Data(), Fill, NumChars);
     }
 }
 
 Oggle::String::String(const char* String)
 {
-    OGGLE_UNIMPLEMENTED();
+    const size_t Length = strlen(String);
+
+    if (Length <= SmallStringCapacity)
+    {
+        InitSmallStringBuffer();
+        m_Capacity = SmallStringCapacity;
+        strlcpy(Rep.Stack, String, SmallStringBufSize);
+    }
+    else
+    {
+        InitHeapBuffer(Length);
+        m_Capacity = Length;
+        strlcpy(Rep.Heap.Data(), String, Length + 1);
+    }
 }
 
 Oggle::String::String(const String& Other)
+    : String(Other.CStr())
 {
-    OGGLE_UNIMPLEMENTED();
+
 }
 
 Oggle::String::String(String&& Other)
 {
-    OGGLE_UNIMPLEMENTED();
+    if (Other.IsSmall())
+    {
+        InitSmallStringBuffer();
+        memcpy(&Rep.Stack, &Other.Rep.Stack, sizeof(Rep.Stack));
+        m_Capacity = SmallStringCapacity;
+    }
+    else
+    {
+        m_Capacity = Other.Capacity();
+        Rep.Heap = Other.Rep.Heap;
+        Other.Rep.Heap = {};
+    }
 }
 
 Oggle::String& Oggle::String::operator=(const String& Other)
@@ -123,10 +148,21 @@ Oggle::size_t Oggle::String::Capacity() const
     return m_Capacity;
 }
 
+void Oggle::String::InitSmallStringBuffer() {
+    std::construct_at(&Rep.Stack);
+    Rep.Stack[SmallStringCapacity] = '\0';
+}
+
+void Oggle::String::InitHeapBuffer(size_t NumChars)
+{
+    auto Buffer = Allocate(NumChars);
+    Buffer[NumChars] = '\0';
+    std::construct_at(&Rep.Heap, Buffer, NumChars);
+}
+
 Oggle::String::Char* Oggle::String::Allocate(size_t NumChars)
 {
     const auto Buffer = new Char[NumChars + 1]; // Include space for a null terminator
-    Buffer[NumChars] = '\0';
     OGGLE_ASSERT(Buffer != nullptr);
     return Buffer;
 }
