@@ -7,3 +7,4 @@
 #include "Core/Vocabulary/Result.hpp"
 #include "Core/Vocabulary/SmartPointer.hpp"
 #include "Core/Container/String.hpp"
+#include "Core/Container/View.hpp"

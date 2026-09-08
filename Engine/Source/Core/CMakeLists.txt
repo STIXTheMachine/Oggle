@@ -4,13 +4,14 @@ set(MODULE Core)
 add_subdirectory(Tests)
 
 add_library(${MODULE}
-        Private/ModuleInterface.cpp
+        Private/Container/String.cpp
+        Private/Container/StringView.cpp
+        Private/Logging/Logging.cpp
         Private/Math/Color.cpp
         Private/Math/ColorConversionTables.cpp
+        Private/ModuleInterface.cpp
         Private/Utilities/Assert.cpp
         Public/Core/Utilities/MemoryUtils.hpp
-        Private/Logging/Logging.cpp
-        Private/Container/String.cpp
         Private/Container/StringView.cpp
         Public/Core/Vocabulary/PrimitiveTypes.hpp
 )
