@@ -131,28 +131,28 @@ namespace Oggle
     template<typename ValueType>
     const ValueType& Optional<ValueType>::GetValue() const &
     {
-        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
         return InternalValue;
     }
 
     template<typename ValueType>
     ValueType& Optional<ValueType>::GetValue() &
     {
-        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
         return InternalValue;
     }
 
     template<typename ValueType>
     const ValueType&& Optional<ValueType>::GetValue() const &&
     {
-        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
         return std::move(InternalValue);
     }
 
     template<typename ValueType>
     ValueType&& Optional<ValueType>::GetValue() &&
     {
-        OGGLE_ASSERT_MSG(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
+        OGGLE_ASSERT(IsValid(),"Attempting to call Optional::GetValue() when IsValid() is false");
         return std::move(InternalValue);
     }
 
