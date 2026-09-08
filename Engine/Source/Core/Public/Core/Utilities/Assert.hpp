@@ -8,16 +8,18 @@ DECLARE_LOG_CATEGORY(Ensure, Warning, Warning, Default);
 #if defined(OGGLE_ENABLE_ASSERTS)
 namespace Oggle::Private::Assert
 {
-    struct AssertInfo
+    struct ErrorInfo
     {
         std::string          ErrorMessage;
         std::source_location Location;
         std::stacktrace      Stacktrace;
     };
 
-    [[noreturn]] void AssertImpl(AssertInfo& Info);
+    [[noreturn]] void AssertImpl(ErrorInfo& Info);
 
-    void EnsureImpl(AssertInfo& Info);
+    [[noreturn]] void UnimplementedImpl(ErrorInfo& Info, const char* FunctionName);
+
+    void EnsureImpl(ErrorInfo& Info);
 }
 
 
@@ -25,7 +27,7 @@ namespace Oggle::Private::Assert
 { \
     if (!(Condition)) \
     { \
-        Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
+        Oggle::Private::Assert::ErrorInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
         Oggle::Private::Assert::AssertImpl(Info); \
     } \
 }
@@ -42,7 +44,7 @@ namespace Oggle::Private::Assert
 { \
     if (!(Condition)) \
     { \
-        Oggle::Private::Assert::AssertInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
+        Oggle::Private::Assert::ErrorInfo Info { .ErrorMessage = std::string { Message }, .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
         Oggle::Private::Assert::EnsureImpl(Info); \
     } \
 }
@@ -53,6 +55,13 @@ namespace Oggle::Private::Assert
 
 #define OGGLE_ENSURE(...) OGGLE_DISPATCH_ENSURE(__VA_ARGS__, OGGLE_ENSURE_2_ARGS, OGGLE_ENSURE_1_ARG)(__VA_ARGS__)
 
+
+
+#define OGGLE_UNIMPLEMENTED() \
+{ \
+        Oggle::Private::Assert::ErrorInfo Info { .Location = std::source_location::current(), .Stacktrace = std::stacktrace::current() }; \
+        Oggle::Private::Assert::UnimplementedImpl(Info, __PRETTY_FUNCTION__); \
+}
 
 #else
 #define OGGLE_ASSERT(Condition)

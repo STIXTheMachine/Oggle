@@ -13,7 +13,6 @@ static std::string GetCheckedExpression(std::source_location& Location)
         SourceFile = std::string { std::istreambuf_iterator(SourceFileStream), {} };
     }
 
-    std::string ErrorLine;
     size_t ErrorLineNumber = Location.line();
 
     size_t ErrorLineStartPos = 0;
@@ -24,7 +23,6 @@ static std::string GetCheckedExpression(std::source_location& Location)
     }
 
     size_t ErrorLineEndPos = SourceFile.find('\n', ErrorLineStartPos + 1);
-    ErrorLine = SourceFile.substr(ErrorLineStartPos, ErrorLineEndPos - ErrorLineStartPos);
 
     size_t MacroBeginPos = SourceFile.find("OGGLE_", ErrorLineStartPos);
     size_t MacroOpenParenPos = SourceFile.find('(', MacroBeginPos + 1);
@@ -66,7 +64,7 @@ static std::string CleanCallstack(std::stacktrace& Stack)
     return CallStack.str();
 }
 
-void Oggle::Private::Assert::AssertImpl(AssertInfo& Info)
+void Oggle::Private::Assert::AssertImpl(ErrorInfo& Info)
 {
     std::string ErrorMessage;
 
@@ -84,7 +82,7 @@ void Oggle::Private::Assert::AssertImpl(AssertInfo& Info)
     else
     {
         ErrorMessage = std::format(
-            "Ensure expression '{}' failed at {}:{}:{}\nError Message: {}\nCallstack:\n{}",
+            "Assertion '{}' failed at {}:{}:{}\nError Message: {}\nCallstack:\n{}",
             GetCheckedExpression(Info.Location),
             Info.Location.file_name(),
             Info.Location.line(),
@@ -98,7 +96,22 @@ void Oggle::Private::Assert::AssertImpl(AssertInfo& Info)
     std::abort();
 }
 
-void Oggle::Private::Assert::EnsureImpl(AssertInfo& Info)
+void Oggle::Private::Assert::UnimplementedImpl(ErrorInfo& Info, const char* FunctionName)
+{
+    std::string ErrorMessage = std::format(
+        "Call to unimplemented function {} at {}:{}:{}\nCallstack:\n{}",
+        FunctionName,
+        Info.Location.file_name(),
+        Info.Location.line(),
+        Info.Location.column(),
+        Info.Stacktrace
+    );
+
+    LOG(Assert, FMT("{}\nThis is a fatal error; program execution will be terminated.", ErrorMessage));
+    std::abort();
+}
+
+void Oggle::Private::Assert::EnsureImpl(ErrorInfo& Info)
 {
     std::string ErrorMessage;
 
