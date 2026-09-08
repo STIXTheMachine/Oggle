@@ -85,6 +85,13 @@ namespace Oggle
     };
 
     template<typename T>
+    Span<T>::Span()
+    {
+        m_Data = nullptr;
+        m_Count = 0;
+    }
+
+    template<typename T>
     Span<T>::Span(T* Start, size_t Count)
     {
         m_Data = Start;
