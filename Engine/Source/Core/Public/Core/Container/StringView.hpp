@@ -4,12 +4,14 @@
 
 namespace Oggle
 {
-    struct StringView : public Span<char>
+    struct StringView
     {
         using Char = char;
 
+        /// @brief
+        //StringView(const String&);
 
     private:
-        Span<Char> View;
+        Span<const Char> m_Data;
     };
 }

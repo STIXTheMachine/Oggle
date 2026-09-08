@@ -8,22 +8,44 @@ namespace Oggle
     {
         using Char = char;
 
+        /// @brief Default constructor
         String();
 
-        /// Create a string with space for NumChars characters. (Underlying memory is uninitialized.)
+        /// @brief Create a string with space for NumChars characters. (Does not initialize underlying memory)
+        /// @param NumChars Number of characters
         String(size_t NumChars);
 
-        /// Create a string composed ot NumChars Fill characters
+        /// @brief Create a string with space for NumChars characters, filling the entire buffer with the Fill character
+        /// @param NumChars Number of characters
+        /// @param Fill Character to fill with
         String(size_t NumChars, Char Fill);
 
-        /// Create a String out of a C string
+        /// @brief Create a String from a C string
+        /// @param String C string to copy
         String(const char* String);
 
+        /// @brief Copy constructor
+        /// @param Other string to copy
         String(const String& Other);
+
+        /// @brief Move constructor. Returns Other to a default-constructed state.
+        /// @param Other String to move from
         String(String&& Other);
 
+        /// @brief Copy assignment operator
+        /// @param Other String to copy
+        /// @return reference to this
         String& operator=(const String& Other);
+
+        /// @brief Move assignment operator. Returns Other to a default-constructed state.
+        /// @param Other String to move from
+        /// @return reference to this
         String& operator=(String&& Other);
+
+        /// @brief Concatenation operator.
+        /// Usage: String A = "Hello, "; String B = "World!"; String C = A + B; // C == "Hello, World!"
+        /// @return String
+        String& operator+(const String& Rhs);
 
         String& operator+=(const Char* String);
         String& operator+=(const String& Other);
@@ -50,10 +72,10 @@ namespace Oggle
         static Char* Allocate(size_t NumChars);
         static void Deallocate(Char*);
 
-        [[nodiscard]] bool IsSmallString() const;
+        [[nodiscard]] bool IsSmall() const;
 
         // Allocates a new heap buffer of size 2 * m_Capacity and then copies the existing buffer into it
-        void DoubleCapacity();
+        void IncreaseCapacity();
 
         struct HeapBuffer
         {
@@ -61,18 +83,13 @@ namespace Oggle
             size_t Length {}; // Includes null byte
         };
 
-        // Includes space for the null terminator
-        static constexpr size_t SmallStringBufSize = (sizeof(HeapBuffer) / sizeof(Char));
-
-        struct StackBuffer
-        {
-            Char Buf[SmallStringBufSize] {}; // Includes null byte
-        };
+        static constexpr size_t SmallStringBufSize  = sizeof(HeapBuffer) / sizeof(Char); // Size of buffer, including null byte
+        static constexpr size_t SmallStringCapacity = SmallStringBufSize - 1;            // Size of largest string that can fit in SmallStringBufSize
 
         union Memory
         {
-            StackBuffer Stack {};
-            HeapBuffer Heap;
+            Char Stack[SmallStringBufSize] {};
+            Span<Char> Heap;
         } Rep;
 
         size_t m_Capacity;
