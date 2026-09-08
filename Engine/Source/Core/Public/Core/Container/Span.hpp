@@ -34,6 +34,14 @@ namespace Oggle
         /// @return An optional object which contains a const reference to the element at Index if Index is valid, empty otherwise
         Optional<const T&> operator[](size_t Index) const;
 
+        /// @brief Get the number of objects held by the Span
+        /// @return Number of objects
+        size_t Count() const;
+
+        /// @brief Get a raw pointer to the data held by the Span
+        /// @return Pointer to first element
+        T* Data() const;
+
         using Iterator             =       T*;
         using ConstIterator        = const T*;
         using ReverseIterator      =       T*;
@@ -105,5 +113,17 @@ namespace Oggle
             return { m_Data[Index] };
         }
         return { };
+    }
+
+    template <typename T>
+    size_t Span<T>::Count() const
+    {
+        return m_Count;
+    }
+
+    template <typename T>
+    T* Span<T>::Data() const
+    {
+        return m_Data;
     }
 }
