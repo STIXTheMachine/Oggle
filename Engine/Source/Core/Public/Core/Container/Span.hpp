@@ -5,15 +5,19 @@
 namespace Oggle
 {
     template<typename T>
-    struct View
+    struct Span
     {
         /// @brief Default constructor
-        View();
+        Span();
 
         /// @brief Create a view from a pointer to the first element and the number of elements
         /// @param Start Pointer to element
         /// @param Count Number of elements
-        View(T* Start, size_t Count);
+        Span(T* Start, size_t Count);
+
+        /// @brief Create a view from an existing static array
+        template<size_t N>
+        Span(T (&)[N]);
 
         /// @brief Check if an index is within the bounds of the view
         /// @param Index Index to check
@@ -35,35 +39,35 @@ namespace Oggle
         using ReverseIterator      =       T*;
         using ConstReverseIterator = const T*;
 
-        /// @brief Return iterator pointing to the first element
+        /// @brief Get an iterator pointing to the first element
         /// @return
         Iterator begin()               { return m_Data; }
 
-        /// @brief Return iterator pointing to the last element
+        /// @brief Get an iterator pointing to the last element
         /// @return
         Iterator end()                 { return m_Data + m_Count; }
 
-        /// @brief Return const iterator pointing to the first element
+        /// @brief Get an const iterator pointing to the first element
         /// @return
         ConstIterator cbegin()         { return m_Data; }
 
-        /// @brief Return const iterator pointing to the last element
+        /// @brief Get an const iterator pointing to the last element
         /// @return
         ConstIterator cend()           { return m_Data + m_Count; }
 
-        /// @brief Return iterator pointing to the last element
+        /// @brief Get an iterator pointing to the last element
         /// @return
         ReverseIterator rbegin()       { return end() - 1; }
 
-        /// @brief Return iterator pointing to the first element
+        /// @brief Get an iterator pointing to the first element
         /// @return
         ReverseIterator rend()         { return m_Data - 1; };
 
-        /// @brief Return const iterator pointing to the last element
+        /// @brief Get an const iterator pointing to the last element
         /// @return
         ConstReverseIterator crbegin() { return rbegin(); }
 
-        /// @brief Return const iterator pointing to the first element
+        /// @brief Get an const iterator pointing to the first element
         /// @return
         ConstReverseIterator crend()   { return m_Data - 1; };
 
@@ -73,20 +77,28 @@ namespace Oggle
     };
 
     template<typename T>
-    View<T>::View(T* Start, size_t Count)
+    Span<T>::Span(T* Start, size_t Count)
     {
         m_Data = Start;
         m_Count = Count;
     }
 
+    template <typename T>
+    template <size_t N>
+    Span<T>::Span(T (&Array)[N])
+    {
+        m_Data = Array;
+        m_Count = N;
+    }
+
     template<typename T>
-    bool View<T>::IsValidIndex(size_t Index) const
+    bool Span<T>::IsValidIndex(size_t Index) const
     {
         return Index < m_Count;
     }
 
     template<typename T>
-    Optional<T&> View<T>::operator[](size_t Index)
+    Optional<T&> Span<T>::operator[](size_t Index)
     {
         if (IsValidIndex(Index))
         {
