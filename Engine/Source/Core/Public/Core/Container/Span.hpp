@@ -43,40 +43,24 @@ namespace Oggle
 
         using Iterator             =       T*;
         using ConstIterator        = const T*;
-        using ReverseIterator      =       T*;
-        using ConstReverseIterator = const T*;
+        // using ReverseIterator      =       T*;
+        // using ConstReverseIterator = const T*;
 
         /// @brief Get an iterator pointing to the first element
         /// @return
         Iterator begin()               { return m_Data; }
 
-        /// @brief Get an iterator pointing to the last element
+        /// @brief Get an iterator pointing to the memory address after last element
         /// @return
         Iterator end()                 { return m_Data + m_Count; }
 
         /// @brief Get an const iterator pointing to the first element
         /// @return
-        ConstIterator cbegin()         { return m_Data; }
+        ConstIterator cbegin()         { return begin(); }
 
-        /// @brief Get an const iterator pointing to the last element
+        /// @brief Get a const iterator pointing to the memory address after last element
         /// @return
-        ConstIterator cend()           { return m_Data + m_Count; }
-
-        /// @brief Get an iterator pointing to the last element
-        /// @return
-        ReverseIterator rbegin()       { return end() - 1; }
-
-        /// @brief Get an iterator pointing to the first element
-        /// @return
-        ReverseIterator rend()         { return m_Data - 1; };
-
-        /// @brief Get an const iterator pointing to the last element
-        /// @return
-        ConstReverseIterator crbegin() { return rbegin(); }
-
-        /// @brief Get an const iterator pointing to the first element
-        /// @return
-        ConstReverseIterator crend()   { return m_Data - 1; };
+        ConstIterator cend()           { return end(); }
 
     private:
         T* m_Data;
