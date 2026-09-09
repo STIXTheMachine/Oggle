@@ -32,6 +32,10 @@ namespace Oggle
         /// @param Other String to move from
         String(String&& Other);
 
+        /// @brief Construct a String from a StringView
+        /// @param View The View to copy for this string
+        String(StringView View);
+
         /// @brief Copy assignment operator
         /// @param Other String to copy
         /// @return reference to this
@@ -42,16 +46,18 @@ namespace Oggle
         /// @return reference to this
         String& operator=(String&& Other);
 
-        /// @brief Concatenation operator.
-        /// Usage: String A = "Hello, "; String B = "World!"; String C = A + B; // C == "Hello, World!"
-        /// @return String
-        String& operator+(const String& Rhs);
+        /// @brief Concatenation assignment operator
+        /// @return String containing the concatenation of the two parameters
+        String& operator+=(const Char* Rhs);
+        String& operator+=(const String& Rhs);
+        String& operator+=(StringView Rhs);
 
-        String& operator+=(const Char* String);
-        String& operator+=(const String& Other);
-        String& operator+=(StringView Other);
+        /// @brief Concatenation operator
+        /// @return String containing the concatenation of the two parameters
+        friend String operator+(String Lhs, const String& Rhs);
+        friend String operator+(String Lhs, const Char* Rhs);
+        friend String operator+(String Lhs, StringView Rhs);
 
-        String(StringView View);
         String& operator=(StringView View);
 
         /// @brief Ensure that the String has room for at least NumChars characters, reallocating if necessary.
@@ -61,10 +67,17 @@ namespace Oggle
         /// Get string contents as a regular C string
         [[nodiscard]] const Char* CStr() const;
 
+        bool operator==(const String& Other) const;
+        bool operator==(const Char* Other) const;
+        bool operator==(StringView Other) const;
+
         Char* Data();
 
         [[nodiscard]] size_t Length() const;
         [[nodiscard]] size_t Capacity() const;
+        [[nodiscard]] bool IsEmpty() const;
+
+        friend std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String);
 
     private:
         /// @brief Initialize the small string buffer. Prior to calling this, make sure Memory::Heap is properly deconstructed, if necessary
@@ -95,7 +108,7 @@ namespace Oggle
 
         struct HeapBuffer
         {
-            Char* Buf  {};
+            Char* Data  {};
             size_t Length {}; // Includes null byte
         };
 
@@ -105,7 +118,7 @@ namespace Oggle
         union Memory
         {
             Char Stack[SmallStringBufSize] {};
-            Span<Char> Heap;
+            HeapBuffer Heap;
         } Rep;
 
         size_t m_Capacity { SmallStringCapacity };
@@ -113,7 +126,6 @@ namespace Oggle
 
 }
 
-std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String);
 
 template<>
 struct std::formatter<Oggle::String> : std::formatter<const char*> {

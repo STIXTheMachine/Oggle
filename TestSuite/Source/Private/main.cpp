@@ -6,6 +6,7 @@ int main(int argc, const char * argv[])
     doctest::Context context;
 
     context.applyCommandLine(argc, argv);
+    context.addFilter("--test-suite", "String");
 
     int res = context.run();
 

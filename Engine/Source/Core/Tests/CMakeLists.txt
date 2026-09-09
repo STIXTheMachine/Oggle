@@ -5,6 +5,7 @@ set(MODULE CoreTest)
 add_library(${MODULE} OBJECT
         Vocabulary/Result.test.cpp
         Vocabulary/Optional.test.cpp
+        Container/String.test.cpp
         Math/Color.test.cpp
 )
 target_link_libraries(${MODULE} PRIVATE Oggle::Testing)
