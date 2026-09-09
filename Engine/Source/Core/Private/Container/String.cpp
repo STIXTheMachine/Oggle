@@ -3,7 +3,106 @@
 
 namespace Oggle
 {
-String::String()
+    namespace Detail
+    {
+        static size_t Strncpy_Safe(Char* Dest, const Char* Source, const size_t DestSize)
+        {
+            if (DestSize == 0) return 0;
+
+            size_t CharsCopied = 0;
+            while (CharsCopied < DestSize - 1)
+            {
+                if ((*Dest++ = *Source++) == '\0') return CharsCopied;
+                CharsCopied++;
+            }
+
+            size_t RemainingBufferLength = DestSize - CharsCopied;
+            while (RemainingBufferLength > 0)
+            {
+                *Dest++ = '\0';
+                RemainingBufferLength--;
+            }
+
+            return CharsCopied;
+        }
+    }
+
+    Detail::HeapString::HeapString(const Char* String)
+    {
+        Length = strlen(String);
+        Buffer = Allocate(Length);
+        Strncpy_Safe(Buffer, String, Length);
+    }
+
+    Detail::HeapString::HeapString(const StackString& Other) : HeapString(Other.Buffer) {}
+
+    Detail::HeapString::HeapString(const HeapString& Other)
+    {
+        Length = Other.Length;
+        Buffer = Allocate(Length);
+        Strncpy_Safe(Buffer, Other.Buffer, Length);
+    }
+
+    Detail::HeapString::HeapString(HeapString&& Other)
+    {
+        Length = Other.Length;
+        Buffer = Other.Buffer;
+        Other = {};
+    }
+
+    Detail::HeapString& Detail::HeapString::operator=(const HeapString& Other)
+    {
+        if (this == &Other) return *this;
+
+        Length = Other.Length;
+        Buffer = Allocate(Length);
+        Strncpy_Safe(Buffer, Other.Buffer, Length);
+
+        return *this;
+    }
+
+    Detail::HeapString& Detail::HeapString::operator=(HeapString&& Other)
+    {
+        if (this == &Other) return *this;
+
+        Length = Other.Length;
+        Buffer = Other.Buffer;
+        Other = {};
+
+        return *this;
+    }
+
+    Detail::HeapString::~HeapString()
+    {
+        Deallocate(Buffer);
+        Length = 0;
+    }
+
+    Char* Detail::HeapString::Allocate(size_t Capacity)
+    {
+        Char* Buffer = new Char[Capacity + 1];
+        OGGLE_ASSERT(Buffer);
+        return Buffer;
+    }
+
+    void Detail::HeapString::Deallocate(Char* Data)
+    {
+        delete [] Data;
+    }
+
+    Detail::StackString::StackString(const Char* String)
+    {
+        const size_t Length = strlen(String);
+        OGGLE_ENSURE(Length < SmallStringBufferSize);
+        Strncpy_Safe(Buffer, String, SmallStringBufferSize);
+    }
+
+    size_t Detail::StackString::Length() const
+    {
+        return strlen(Buffer);
+    }
+
+    String::String()
 {
     InitSmallString();
 }

@@ -4,6 +4,38 @@
 
 namespace Oggle
 {
+    namespace Detail
+    {
+        struct StackString;
+        struct HeapString
+        {
+            HeapString() = default;
+            HeapString(const Char* String);
+            HeapString(const StackString& Other);
+            HeapString(const HeapString& Other);
+            HeapString(HeapString&& Other);
+            HeapString& operator=(const HeapString& Other);
+            HeapString& operator=(HeapString&& Other);
+            ~HeapString();
+            static Char* Allocate(size_t Capacity);
+            static void Deallocate(Char* Data);
+
+            Char* Buffer {};
+            size_t Length {};
+        };
+
+        static constexpr size_t SmallStringBufferSize = sizeof(HeapString) / sizeof(Char) - 1; // Size of largest string that can fit in SmallStringBufSize
+
+        struct StackString
+        {
+            StackString() = default;
+            StackString(const Char* String);
+            size_t Length() const;
+
+            Char Buffer[SmallStringBufferSize] {};
+        };
+    }
+
     struct String final
     {
         using Char = char;
