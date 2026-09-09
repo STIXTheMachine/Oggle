@@ -25,6 +25,7 @@ namespace Oggle
         };
 
         static constexpr size_t SmallStringBufferSize = sizeof(HeapString) / sizeof(Char) - 1; // Size of largest string that can fit in SmallStringBufSize
+        static constexpr size_t SmallStringCapacity   = SmallStringBufferSize - 1;
 
         struct StackString
         {
@@ -112,48 +113,18 @@ namespace Oggle
         friend std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String);
 
     private:
-        /// @brief Initialize the small string buffer. Prior to calling this, make sure Memory::Heap is properly deconstructed, if necessary
-        void InitSmallString();
-
-        /// @brief Destroy the small string buffer
-        void DestroySmallString();
-
-        /// @brief Initialize the heap buffer. Prior to calling this, make sure Memory::Stack is properly deconstructed, if necessary
-        /// @param Capacity Capacity of buffer to initialize
-        void InitBigString(size_t Capacity);
-
-        /// @brief Destroy the heap buffer, freeing any memory it holds
-        void DestroyBigString();
-
-        /// @brief Allocate a null-terminated buffer with space for a string of capacity NumChars
-        /// @param NumChars number of characters
-        /// @return Pointer to allocated buffer
-        static Char* Allocate(size_t NumChars);
-
-        /// @brief Deallocate buffer previously allocated with String::Allocate
-        static void Deallocate(Char*);
-
         [[nodiscard]] bool IsSmall() const;
 
         /// @brief Grow the string
         void IncreaseCapacity();
 
-        struct HeapBuffer
+        union
         {
-            Char* Data  {};
-            size_t Length {}; // Includes null byte
-        };
-
-        static constexpr size_t SmallStringBufSize  = sizeof(HeapBuffer) / sizeof(Char); // Size of buffer, including null byte
-        static constexpr size_t SmallStringCapacity = SmallStringBufSize - 1;            // Size of largest string that can fit in SmallStringBufSize
-
-        union Memory
-        {
-            Char Stack[SmallStringBufSize] {};
-            HeapBuffer Heap;
+            Detail::StackString Stack {};
+            Detail::HeapString Heap;
         } Rep;
 
-        size_t m_Capacity { SmallStringCapacity };
+        size_t m_Capacity { Detail::SmallStringCapacity };
     };
 
 }

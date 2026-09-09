@@ -25,411 +25,239 @@ namespace Oggle
 
             return CharsCopied;
         }
+
+        HeapString::HeapString(const Char* String)
+        {
+            Length = strlen(String);
+            Buffer = Allocate(Length);
+            Strncpy_Safe(Buffer, String, Length);
+        }
+
+        HeapString::HeapString(const StackString& Other) : HeapString(Other.Buffer)
+        {
+        }
+
+        HeapString::HeapString(const HeapString& Other)
+        {
+            Length = Other.Length;
+            Buffer = Allocate(Length);
+            Strncpy_Safe(Buffer, Other.Buffer, Length);
+        }
+
+        HeapString::HeapString(HeapString&& Other)
+        {
+            Length = Other.Length;
+            Buffer = Other.Buffer;
+            Other = {};
+        }
+
+        HeapString& HeapString::operator=(const HeapString& Other)
+        {
+            if (this == &Other) return *this;
+
+            Length = Other.Length;
+            Buffer = Allocate(Length);
+            Strncpy_Safe(Buffer, Other.Buffer, Length);
+
+            return *this;
+        }
+
+        HeapString& HeapString::operator=(HeapString&& Other)
+        {
+            if (this == &Other) return *this;
+
+            Length = Other.Length;
+            Buffer = Other.Buffer;
+            Other = {};
+
+            return *this;
+        }
+
+        HeapString::~HeapString()
+        {
+            Deallocate(Buffer);
+            Length = 0;
+        }
+
+        Char* HeapString::Allocate(size_t Capacity)
+        {
+            Char* Buffer = new Char[Capacity + 1];
+            OGGLE_ASSERT(Buffer);
+            return Buffer;
+        }
+
+        void HeapString::Deallocate(Char* Data)
+        {
+            delete [] Data;
+        }
+
+        StackString::StackString(const Char* String)
+        {
+            const size_t Length = strlen(String);
+            OGGLE_ENSURE(Length < SmallStringBufferSize);
+            Strncpy_Safe(Buffer, String, SmallStringBufferSize);
+        }
+
+        size_t StackString::Length() const
+        {
+            return strlen(Buffer);
+        }
     }
 
-    Detail::HeapString::HeapString(const Char* String)
+
+    std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String)
     {
-        Length = strlen(String);
-        Buffer = Allocate(Length);
-        Strncpy_Safe(Buffer, String, Length);
-    }
-
-    Detail::HeapString::HeapString(const StackString& Other) : HeapString(Other.Buffer) {}
-
-    Detail::HeapString::HeapString(const HeapString& Other)
-    {
-        Length = Other.Length;
-        Buffer = Allocate(Length);
-        Strncpy_Safe(Buffer, Other.Buffer, Length);
-    }
-
-    Detail::HeapString::HeapString(HeapString&& Other)
-    {
-        Length = Other.Length;
-        Buffer = Other.Buffer;
-        Other = {};
-    }
-
-    Detail::HeapString& Detail::HeapString::operator=(const HeapString& Other)
-    {
-        if (this == &Other) return *this;
-
-        Length = Other.Length;
-        Buffer = Allocate(Length);
-        Strncpy_Safe(Buffer, Other.Buffer, Length);
-
-        return *this;
-    }
-
-    Detail::HeapString& Detail::HeapString::operator=(HeapString&& Other)
-    {
-        if (this == &Other) return *this;
-
-        Length = Other.Length;
-        Buffer = Other.Buffer;
-        Other = {};
-
-        return *this;
-    }
-
-    Detail::HeapString::~HeapString()
-    {
-        Deallocate(Buffer);
-        Length = 0;
-    }
-
-    Char* Detail::HeapString::Allocate(size_t Capacity)
-    {
-        Char* Buffer = new Char[Capacity + 1];
-        OGGLE_ASSERT(Buffer);
-        return Buffer;
-    }
-
-    void Detail::HeapString::Deallocate(Char* Data)
-    {
-        delete [] Data;
-    }
-
-    Detail::StackString::StackString(const Char* String)
-    {
-        const size_t Length = strlen(String);
-        OGGLE_ENSURE(Length < SmallStringBufferSize);
-        Strncpy_Safe(Buffer, String, SmallStringBufferSize);
-    }
-
-    size_t Detail::StackString::Length() const
-    {
-        return strlen(Buffer);
+        return Stream << String.CStr();
     }
 
     String::String()
-{
-    InitSmallString();
-}
-
-String::String(size_t NumChars)
-{
-    if (NumChars <= SmallStringCapacity)
     {
-        InitSmallString();
+        OGGLE_UNIMPLEMENTED()
     }
-    else
+
+    String::String(size_t NumChars)
     {
-        InitBigString(NumChars);
+        OGGLE_UNIMPLEMENTED()
     }
-}
 
-String::String(size_t NumChars, Char Fill)
-{
-    if (IsSmall())
+    String::String(size_t NumChars, Char Fill)
     {
-        InitSmallString();
-        memset(Rep.Stack, Fill, SmallStringCapacity);
-        Rep.Stack[NumChars] = '\0';
+        OGGLE_UNIMPLEMENTED()
     }
-    else
+
+    String::String(const char* String)
     {
-        InitBigString(NumChars);
-        memset(Rep.Heap.Data, Fill, NumChars);
-        Rep.Heap.Data[NumChars] = '\0';
+        OGGLE_UNIMPLEMENTED()
     }
-}
 
-String::String(const char* String)
-{
-    const size_t Length = strlen(String);
-
-    if (Length <= SmallStringCapacity)
+    String::String(const String& Other)
     {
-        InitSmallString();
-        strncpy(Rep.Stack, String, SmallStringCapacity);
-        Rep.Stack[Length] = '\0';
+        OGGLE_UNIMPLEMENTED()
     }
-    else
+
+    String::String(String&& Other)
     {
-        InitBigString(Length);
-        strncpy(Rep.Heap.Data, String, Length);
-        Rep.Heap.Data[Length] = '\0';
-        Rep.Heap.Length = Length;
+        OGGLE_UNIMPLEMENTED()
     }
-}
 
-String::String(const String& Other)
-{
-    if (Other.IsSmall())
+    String::String(StringView View)
     {
-        InitSmallString();
-        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
-        Rep.Stack[Other.Length()] = '\0';
+        OGGLE_UNIMPLEMENTED()
     }
-    else
+
+    String& String::operator=(const String& Other)
     {
-        InitBigString(Other.Capacity());
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
-}
 
-String::String(String&& Other)
-{
-    if (Other.IsSmall())
+    String& String::operator=(String&& Other)
     {
-        InitSmallString();
-        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
-    else
+
+    String& String::operator+=(const Char* Rhs)
     {
-        m_Capacity     = Other.Capacity();
-        Rep.Heap       = Other.Rep.Heap;
-        Other.Rep.Heap = {};
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
-}
 
-String::String(StringView View)
-{
-    OGGLE_UNIMPLEMENTED();
-}
-
-String& String::operator=(const String& Other)
-{
-    if (this == &Other) return *this;
-
-    if (IsSmall())
+    String& String::operator+=(const String& Rhs)
     {
-        DestroySmallString();
-    }
-    else {
-        DestroyBigString();
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
 
-    if (Other.IsSmall())
+    String& String::operator+=(StringView Rhs)
     {
-        InitSmallString();
-        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
-    else
+
+    String operator+(String Lhs, const String& Rhs)
     {
-        InitBigString(Other.Capacity());
-        strncpy(Rep.Heap.Data, Other.Rep.Heap.Data, Other.Capacity());
+        return Lhs += Rhs;
     }
 
-    return *this;
-}
-
-
-String& String::operator=(String&& Other)
-{
-    if (this == &Other) return *this;
-
-    if (IsSmall())
+    String operator+(String Lhs, const Char* Rhs)
     {
-        DestroySmallString();
-    }
-    else {
-        DestroyBigString();
+        return Lhs += Rhs;
     }
 
-    if (Other.IsSmall())
+    String operator+(String Lhs, StringView Rhs)
     {
-        InitSmallString();
-        strncpy(Rep.Stack, Other.Rep.Stack, SmallStringCapacity);
+        return Lhs += Rhs;
     }
-    else
+
+    String& String::operator=(StringView View)
     {
-        m_Capacity     = Other.Capacity();
-        Rep.Heap       = Other.Rep.Heap;
-        Other.Rep.Heap = {};
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
 
-    return *this;
-}
-
-String& String::operator+=(const Char* Rhs)
-{
-    const size_t InitialLength    = Length();
-    const size_t ExtraLength      = strlen(Rhs);
-    const size_t RequiredCapacity = InitialLength + ExtraLength;
-
-    Reserve(RequiredCapacity);
-
-    if (IsSmall())
+    void String::Reserve(size_t NumChars)
     {
-        Char*        CurrentStringEnd = Rep.Stack + Length(); // Points to null terminator of string in Rep.Stack
-        const size_t FreeBufferLength = SmallStringCapacity - InitialLength;
-        strncpy(CurrentStringEnd, Rhs, FreeBufferLength);
-        Rep.Stack[RequiredCapacity] = '\0';
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
-    else
+
+    const Char* String::CStr() const
     {
-        Char*        CurrentStringEnd = Rep.Heap.Data + Length(); // Points to null terminator
-        const size_t FreeBufferLength = Capacity() - InitialLength;
-        strncpy(CurrentStringEnd, Rhs, FreeBufferLength);
-        Rep.Heap.Data[RequiredCapacity] = '\0'; // Until Optional<T&> is supported
-        //Rep.Heap[RequiredCapacity].GetValue() = '\0';
+        OGGLE_UNIMPLEMENTED()
+        return *this;
     }
 
-    return *this;
-}
-
-String& String::operator+=(const String& Rhs)
-{
-    return *this += Rhs.CStr();
-}
-
-String& String::operator+=(StringView Rhs)
-{
-    // TODO: Implement once StringView is a thing again
-    OGGLE_UNIMPLEMENTED();
-    return *this;
-}
-
-String& String::operator=(StringView View)
-{
-    OGGLE_UNIMPLEMENTED();
-    return *this;
-}
-
-void String::Reserve(size_t NumChars)
-{
-    if (NumChars <= Capacity())
+    bool String::operator==(const String& Other) const
     {
-        return;
+        OGGLE_UNIMPLEMENTED()
+        return false;
     }
 
-    // Capacity() should never return anything less than SmallStringCapacity, so if we get here we for sure need to allocate
-    Char* const  NewBuffer    = Allocate(NumChars);
-    const size_t CachedLength = Length();
-
-    if (IsSmall())
+    bool String::operator==(const Char* Other) const
     {
-        memcpy(NewBuffer, Rep.Stack, SmallStringCapacity);
-        DestroySmallString();
-        Rep.Heap = { .Data = NewBuffer, .Length = CachedLength };
+        OGGLE_UNIMPLEMENTED()
+        return false;
     }
-    else
+
+    bool String::operator==(StringView Other) const
     {
-        const Char*  OldBuffer    = Rep.Heap.Data;
-        memcpy(NewBuffer, Rep.Heap.Data, CachedLength);
-        delete[] OldBuffer;
-        Rep.Heap = { .Data = NewBuffer, .Length = CachedLength };
+        OGGLE_UNIMPLEMENTED()
+        return false;
     }
 
-    m_Capacity = NumChars;
-}
+    Char* String::Data()
+    {
+        OGGLE_UNIMPLEMENTED()
+        return nullptr;
+    }
 
-const String::Char* String::CStr() const
-{
-    if (IsSmall()) return Rep.Stack;
+    size_t String::Length() const
+    {
+        OGGLE_UNIMPLEMENTED()
+        return 0;
+    }
 
-    return Rep.Heap.Data;
-}
-bool String::operator==(const String& Other) const
-{
-    const size_t MinLength = Length() < Other.Length() ? Length() : Other.Length();
-    return strncmp(CStr(), Other.CStr(), MinLength) == 0;
-}
-bool String::operator==(const Char* Other) const
-{
-    const size_t MinLength = Length() < strlen(Other) ? Length() : strlen(Other);
-    return strncmp(CStr(), Other, MinLength) == 0;
-}
-bool String::operator==(StringView Other) const
-{
-    OGGLE_UNIMPLEMENTED()
-    return false;
-}
+    size_t String::Capacity() const
+    {
+        OGGLE_UNIMPLEMENTED()
+        return 0;
+    }
 
-String::Char* String::Data()
-{
-    if (IsSmall()) return Rep.Stack;
+    bool String::IsEmpty() const
+    {
+        OGGLE_UNIMPLEMENTED()
+        return false;
+    }
 
-    return Rep.Heap.Data;
-}
+    bool String::IsSmall() const
+    {
+        OGGLE_UNIMPLEMENTED()
+        return false;
+    }
 
-size_t String::Length() const
-{
-    if (IsSmall()) return strlen(Rep.Stack);
-
-    return Rep.Heap.Length;
-}
-
-size_t String::Capacity() const
-{
-    OGGLE_ENSURE(m_Capacity >= SmallStringCapacity, FMT("String::Capacity() reported a capacity of {}, which is smaller than the SSO capacity of {}. This doesn't inherently break anything but should be investigated.", m_Capacity, SmallStringCapacity));
-
-    return m_Capacity;
-}
-bool String::IsEmpty() const
-{
-    return Length() == 0;
-}
-
-void String::InitSmallString() {
-    std::construct_at(&Rep.Stack);
-    Rep.Stack[SmallStringCapacity] = '\0';
-    m_Capacity                     = SmallStringCapacity;
-}
-
-void String::DestroySmallString()
-{
-    std::destroy_at(&Rep.Stack);
-}
-
-void String::InitBigString(size_t Capacity)
-{
-    auto Buffer      = Allocate(Capacity);
-    Buffer[Capacity] = '\0';
-    std::construct_at(&Rep.Heap, Buffer, 0);
-    m_Capacity = Capacity;
-}
-
-void String::DestroyBigString()
-{
-    delete[] Rep.Heap.Data;
-    std::destroy_at(&Rep.Heap);
-}
-
-String::Char* String::Allocate(size_t NumChars)
-{
-    const auto Buffer = new Char[NumChars + 1]; // Include space for a null terminator
-    OGGLE_ASSERT(Buffer != nullptr);
-    return Buffer;
-}
-
-void String::Deallocate(Char* Buffer)
-{
-    delete[] Buffer;
-}
-
-bool String::IsSmall() const
-{
-    return Capacity() <= SmallStringCapacity;
-}
-
-void String::IncreaseCapacity()
-{
-    Reserve(2 * Capacity());
-}
-
-String operator+(String Lhs, const String& Rhs)
-{
-    Lhs += Rhs;
-    return Lhs;
-}
-
-String operator+(String Lhs, const Char* Rhs)
-{
-    Lhs += Rhs;
-    return Lhs;
-}
-
-String operator+(String Lhs, StringView Rhs)
-{
-    Lhs += Rhs;
-    return Lhs;
-}
-
-
-std::ostream& operator<<(std::ostream& Stream, const Oggle::String& String)
-{
-    return Stream << String.CStr();
-}
+    void String::IncreaseCapacity()
+    {
+        OGGLE_UNIMPLEMENTED()
+    }
 } // namespace Oggle
