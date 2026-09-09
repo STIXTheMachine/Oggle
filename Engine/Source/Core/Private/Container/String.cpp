@@ -26,6 +26,12 @@ namespace Oggle
             return CharsCopied;
         }
 
+        HeapString::HeapString(size_t Capacity)
+        {
+            Buffer = Allocate(Capacity);
+            Length = 0;
+        }
+
         HeapString::HeapString(const Char* String)
         {
             Length = strlen(String);
@@ -91,6 +97,17 @@ namespace Oggle
             delete [] Data;
         }
 
+        Char* HeapString::Reallocate(size_t NewCapacity)
+        {
+            Char* NewBuffer = new Char[NewCapacity + 1];
+
+            Strncpy_Safe(NewBuffer, Buffer, NewCapacity);
+            delete [] Buffer;
+
+            Buffer = NewBuffer;
+            Length = NewCapacity;
+        }
+
         StackString::StackString(const Char* String)
         {
             const size_t Length = strlen(String);
@@ -112,17 +129,40 @@ namespace Oggle
 
     String::String()
     {
-        OGGLE_UNIMPLEMENTED()
+        Rep.Stack = {};
+        m_Capacity = Detail::SmallStringCapacity;
     }
 
-    String::String(size_t NumChars)
+    String::String(size_t Capacity)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (Capacity <= Detail::SmallStringCapacity)
+        {
+            Rep.Stack = {};
+            m_Capacity = Detail::SmallStringCapacity;
+        }
+        else
+        {
+            Rep.Heap = { Capacity };
+            m_Capacity = Capacity;
+        }
     }
 
     String::String(size_t NumChars, Char Fill)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (NumChars <= Detail::SmallStringCapacity)
+        {
+            Rep.Stack = {};
+            m_Capacity = Detail::SmallStringCapacity;
+            memset(Rep.Stack.Buffer, Fill, NumChars); // Detail::StackString fills its buffer with \0 on construction, we don't need to manually add a null terminator
+        }
+        else
+        {
+            Rep.Heap = { NumChars };
+            Rep.Heap.Length = NumChars;
+            m_Capacity = NumChars;
+            memset(Rep.Heap.Buffer, Fill, NumChars);
+            Rep.Heap.Buffer[NumChars] = '\0'; // As an optimization, Detail::HeapString does NOT fill its buffer with \0, so we DO have to do it here.
+        }
     }
 
     String::String(const char* String)
@@ -199,13 +239,12 @@ namespace Oggle
     void String::Reserve(size_t NumChars)
     {
         OGGLE_UNIMPLEMENTED()
-        return *this;
     }
 
     const Char* String::CStr() const
     {
         OGGLE_UNIMPLEMENTED()
-        return *this;
+        return nullptr;
     }
 
     bool String::operator==(const String& Other) const

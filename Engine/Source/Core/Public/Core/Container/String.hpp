@@ -10,6 +10,7 @@ namespace Oggle
         struct HeapString
         {
             HeapString() = default;
+            HeapString(size_t Capacity);
             HeapString(const Char* String);
             HeapString(const StackString& Other);
             HeapString(const HeapString& Other);
@@ -19,6 +20,7 @@ namespace Oggle
             ~HeapString();
             static Char* Allocate(size_t Capacity);
             static void Deallocate(Char* Data);
+            Char* Reallocate(size_t NewCapacity);
 
             Char* Buffer {};
             size_t Length {};
@@ -45,8 +47,8 @@ namespace Oggle
         String();
 
         /// @brief Create a string with space for NumChars characters. (Does not initialize underlying memory)
-        /// @param NumChars Number of characters
-        String(size_t NumChars);
+        /// @param Capacity Number of characters
+        String(size_t Capacity);
 
         /// @brief Create a string with space for NumChars characters, filling the entire buffer with the Fill character
         /// @param NumChars Number of characters
@@ -118,10 +120,11 @@ namespace Oggle
         /// @brief Grow the string
         void IncreaseCapacity();
 
-        union
+        union Memory
         {
             Detail::StackString Stack {};
             Detail::HeapString Heap;
+            ~Memory() {};
         } Rep;
 
         size_t m_Capacity { Detail::SmallStringCapacity };
