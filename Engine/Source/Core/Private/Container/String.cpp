@@ -106,6 +106,8 @@ namespace Oggle
 
             Buffer = NewBuffer;
             Length = NewCapacity;
+
+            return NewBuffer;
         }
 
         StackString::StackString(const Char* String)
@@ -167,17 +169,39 @@ namespace Oggle
 
     String::String(const char* String)
     {
-        OGGLE_UNIMPLEMENTED()
+        const size_t Length = strlen(String);
+        if (Length <= Detail::SmallStringCapacity)
+        {
+            Rep.Stack = Detail::StackString { String };
+        }
+        else
+        {
+            Rep.Heap = Detail::HeapString { String };
+        }
     }
 
     String::String(const String& Other)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (Other.IsSmall())
+        {
+            Rep.Stack = Other.Rep.Stack;
+        }
+        else
+        {
+            Rep.Heap = Other.Rep.Heap;
+        }
     }
 
     String::String(String&& Other)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (Other.IsSmall())
+        {
+            Rep.Stack = Other.Rep.Stack;
+        }
+        else
+        {
+            Rep.Heap = std::move(Other.Rep.Heap);
+        }
     }
 
     String::String(StringView View)
@@ -187,13 +211,33 @@ namespace Oggle
 
     String& String::operator=(const String& Other)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (this == &Other) return *this;
+
+        if (Other.IsSmall())
+        {
+            Rep.Stack = Other.Rep.Stack;
+        }
+        else
+        {
+            Rep.Heap = Other.Rep.Heap;
+        }
+
         return *this;
     }
 
     String& String::operator=(String&& Other)
     {
-        OGGLE_UNIMPLEMENTED()
+        if (this == &Other) return *this;
+
+        if (Other.IsSmall())
+        {
+            Rep.Stack = Other.Rep.Stack;
+        }
+        else
+        {
+            Rep.Heap = std::move(Other.Rep.Heap);
+        }
+
         return *this;
     }
 
@@ -243,8 +287,9 @@ namespace Oggle
 
     const Char* String::CStr() const
     {
-        OGGLE_UNIMPLEMENTED()
-        return nullptr;
+        if (IsSmall()) return Rep.Stack.Buffer;
+
+        return Rep.Heap.Buffer;
     }
 
     bool String::operator==(const String& Other) const
@@ -273,26 +318,25 @@ namespace Oggle
 
     size_t String::Length() const
     {
-        OGGLE_UNIMPLEMENTED()
-        return 0;
+        if (IsSmall()) return Rep.Stack.Length();
+
+        return Rep.Heap.Length;
     }
 
     size_t String::Capacity() const
     {
-        OGGLE_UNIMPLEMENTED()
-        return 0;
+        OGGLE_ENSURE(m_Capacity >= Detail::SmallStringCapacity)
+        return m_Capacity;
     }
 
     bool String::IsEmpty() const
     {
-        OGGLE_UNIMPLEMENTED()
-        return false;
+        return Length() == 0;
     }
 
     bool String::IsSmall() const
     {
-        OGGLE_UNIMPLEMENTED()
-        return false;
+        return m_Capacity <= Detail::SmallStringCapacity;
     }
 
     void String::IncreaseCapacity()

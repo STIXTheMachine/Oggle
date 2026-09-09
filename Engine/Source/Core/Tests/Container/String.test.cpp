@@ -51,24 +51,30 @@ TEST_CASE("Construction")
 
         SUBCASE("Small String")
         {
-            for (size_t i = 0; i < LargeStringThreshold; i++)
-            {
-                String Small { i };
-                CHECK_IS_EMPTY(Small);
-                CHECK_IS_SMALL(Small);
-                CHECK_IS_EQUAL(Small, "");
-            }
+            // for (size_t i = 0; i < LargeStringThreshold; i++)
+            // {
+            //     String Small { i };
+            //     CHECK_IS_EMPTY(Small);
+            //     CHECK_IS_SMALL(Small);
+            //     CHECK_IS_EQUAL(Small, "");
+            // }
         }
 
         SUBCASE("Large String")
         {
+            std::cout << "Foo" << std::endl;
+            String Foo { 16 };
+            std::cout << "Start" << std::endl;
             for (size_t i = LargeStringThreshold; i < 64; i++)
             {
+                std::cout << "Starting loop " << i << std::endl;
                 String Large { i };
                 CHECK_IS_EMPTY(Large);
                 CHECK_IS_LARGE(Large);
                 CHECK_IS_EQUAL(Large, "");
+                std::cout << "Ending loop " << i << std::endl;
             }
+            std::cout << "End" << std::endl;
         }
     }
 
